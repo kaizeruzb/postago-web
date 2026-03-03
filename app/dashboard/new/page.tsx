@@ -61,6 +61,7 @@ export default function NewParcelPage() {
 
   // Form state
   const [originCountry, setOriginCountry] = useState("");
+  const [destinationCountry, setDestinationCountry] = useState("");
   const [routeId, setRouteId] = useState("");
   const [description, setDescription] = useState("");
   const [weightKg, setWeightKg] = useState("");
@@ -72,10 +73,13 @@ export default function NewParcelPage() {
     queryFn: () => api<{ routes: Route[] }>("/api/tariffs/routes"),
   });
 
-  // Filter routes by selected origin country
+  // Filter routes by selected origin + destination
   const availableRoutes = useMemo(
-    () => routesData?.routes.filter((r: Route) => r.originCountry === originCountry) || [],
-    [routesData, originCountry]
+    () =>
+      routesData?.routes.filter(
+        (r: Route) => r.originCountry === originCountry && r.destinationCountry === destinationCountry
+      ) || [],
+    [routesData, originCountry, destinationCountry]
   );
 
   const selectedRoute = availableRoutes.find((r: Route) => r.id === routeId);
@@ -96,6 +100,22 @@ export default function NewParcelPage() {
       flag: WAREHOUSES.find((w) => w.originCode === code)?.flag || "",
     }));
   }, [routesData]);
+
+  // Available destination countries for selected origin
+  const destinationCountries = useMemo(() => {
+    if (!routesData?.routes || !originCountry) return [];
+    const codes = Array.from(
+      new Set(
+        routesData.routes
+          .filter((r: Route) => r.originCountry === originCountry)
+          .map((r: Route) => r.destinationCountry)
+      )
+    ) as string[];
+    return codes.map((code) => ({
+      code,
+      name: COUNTRY_NAMES[code] || code,
+    }));
+  }, [routesData, originCountry]);
 
   const createParcelMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
@@ -166,41 +186,74 @@ export default function NewParcelPage() {
         ))}
       </div>
 
-      {/* Step 1: Origin Country */}
+      {/* Step 1: Origin + Destination Country */}
       {step === 1 && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-bold">
-              <MapPin className="w-5 h-5 text-blue-600" />
-              <h3>Откуда отправляете?</h3>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            {/* Origin */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-slate-900 font-bold">
+                <MapPin className="w-5 h-5 text-blue-600" />
+                <h3>Откуда отправляете?</h3>
+              </div>
+
+              {isLoadingRoutes ? (
+                <div className="h-12 bg-slate-100 animate-pulse rounded-xl" />
+              ) : (
+                <div className="relative">
+                  <select
+                    value={originCountry}
+                    onChange={(e) => {
+                      setOriginCountry(e.target.value);
+                      setDestinationCountry("");
+                      setRouteId("");
+                    }}
+                    className="w-full appearance-none px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg font-medium bg-white"
+                  >
+                    <option value="">Выберите страну отправки</option>
+                    {originCountries.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.flag} {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                </div>
+              )}
             </div>
 
-            {isLoadingRoutes ? (
-              <div className="h-12 bg-slate-100 animate-pulse rounded-xl" />
-            ) : (
-              <div className="relative">
-                <select
-                  value={originCountry}
-                  onChange={(e) => {
-                    setOriginCountry(e.target.value);
-                    setRouteId("");
-                  }}
-                  className="w-full appearance-none px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg font-medium bg-white"
-                >
-                  <option value="">Выберите страну</option>
-                  {originCountries.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.flag} {c.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+            {/* Destination */}
+            {originCountry && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
+                  <ArrowRight className="w-5 h-5 text-blue-600" />
+                  <h3>Куда доставить?</h3>
+                </div>
+
+                <div className="relative">
+                  <select
+                    value={destinationCountry}
+                    onChange={(e) => {
+                      setDestinationCountry(e.target.value);
+                      setRouteId("");
+                    }}
+                    className="w-full appearance-none px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg font-medium bg-white"
+                  >
+                    <option value="">Выберите страну доставки</option>
+                    {destinationCountries.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                </div>
               </div>
             )}
           </div>
 
           {/* Warehouse info */}
-          {selectedWarehouse && (
+          {selectedWarehouse && destinationCountry && (
             <div className="bg-blue-50 rounded-2xl border border-blue-100 p-5 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{selectedWarehouse.flag}</span>
@@ -222,9 +275,9 @@ export default function NewParcelPage() {
 
           <button
             onClick={() => setStep(2)}
-            disabled={!originCountry}
+            disabled={!originCountry || !destinationCountry}
             className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-lg transition-all ${
-              originCountry
+              originCountry && destinationCountry
                 ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
