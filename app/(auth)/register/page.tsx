@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
@@ -13,6 +13,12 @@ function RegisterForm() {
 
   const phone = searchParams.get("phone") || "";
   const code = searchParams.get("code") || "";
+
+  useEffect(() => {
+    if (!phone || !code) {
+      router.replace("/login");
+    }
+  }, [phone, code, router]);
 
   const [name, setName] = useState("");
   const [city, setCity] = useState("Tashkent");

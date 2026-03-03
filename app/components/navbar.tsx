@@ -45,7 +45,7 @@ export function Navbar() {
             <>
               <Link href="/login" className="text-sm font-bold text-gray-600 hover:text-blue-600">Войти</Link>
               <Link
-                href="/register"
+                href="/login"
                 className="px-6 py-2 bg-blue-600 text-white text-sm font-bold rounded-full hover:bg-blue-700 transition"
               >
                 Регистрация
