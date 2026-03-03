@@ -132,7 +132,7 @@ export default function ParcelDetailsPage() {
             className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-black transition-all shadow-lg shadow-green-100"
           >
             <CreditCard className="w-5 h-5" />
-            Оплатить ${(parcel.finalCost || parcel.calculatedCost || 0).toFixed(2)}
+            Оплатить ${Number(parcel.finalCost || parcel.calculatedCost || 0).toFixed(2)}
           </button>
         )}
       </div>

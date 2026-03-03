@@ -197,9 +197,9 @@ export default function WarehousePage() {
                           <Scale className="w-3.5 h-3.5 text-slate-400" />
                           {parcel.weightKg ? `${parcel.weightKg} кг` : "—"}
                         </div>
-                        {parcel.finalCost && (
+                        {parcel.finalCost != null && (
                           <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
-                            ${parcel.finalCost.toFixed(2)}
+                            ${Number(parcel.finalCost).toFixed(2)}
                           </div>
                         )}
                       </div>
