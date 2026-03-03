@@ -67,13 +67,12 @@ export default function NewParcelPage() {
 
   const createParcelMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      api<{ parcel: Record<string, unknown> }>("/api/parcels", {
+      api<Record<string, unknown>>("/api/parcels", {
         method: "POST",
         body: JSON.stringify(data),
         token: token!,
       }),
-    onSuccess: (data: { parcel: Record<string, unknown> }) => {
-      const parcel = data.parcel;
+    onSuccess: (parcel: Record<string, unknown>) => {
       const route = selectedRoute!;
       const weight = weightKg ? parseFloat(weightKg) : undefined;
       setCreatedParcel({
