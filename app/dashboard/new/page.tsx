@@ -73,7 +73,7 @@ export default function NewParcelPage() {
     });
   };
 
-  const selectedRoute = routesData?.routes.find(r => r.id === routeId);
+  const selectedRoute = routesData?.routes.find((r: any) => r.id === routeId);
   const estimatedCost = selectedRoute && weightKg 
     ? (selectedRoute.ratePerKg * parseFloat(weightKg)).toFixed(2) 
     : null;
@@ -105,7 +105,7 @@ export default function NewParcelPage() {
             <div className="h-12 bg-slate-100 animate-pulse rounded-xl" />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {routesData?.routes.map((route) => (
+              {routesData?.routes.map((route: any) => (
                 <label 
                   key={route.id}
                   className={`

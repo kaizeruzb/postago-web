@@ -59,7 +59,7 @@ export default function DestinationReceivePage() {
     }
   });
 
-  const filteredBatches = data?.batches.filter(b => 
+  const filteredBatches = data?.batches.filter((b: any) => 
     b.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (b.trackingNumber && b.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()))
   ) || [];
@@ -110,7 +110,7 @@ export default function DestinationReceivePage() {
                   </td>
                 </tr>
               ) : (
-                filteredBatches.map((batch) => (
+                filteredBatches.map((batch: any) => (
                   <tr key={batch.id} className="group">
                     <td className="px-6 py-6 bg-slate-50 rounded-l-3xl border-y border-l border-slate-100 group-hover:bg-slate-100/50 transition-colors">
                       <div className="flex flex-col gap-1">

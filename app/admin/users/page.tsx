@@ -67,7 +67,7 @@ export default function AdminUsers() {
     }
   });
 
-  const filteredUsers = data?.users.filter(u => 
+  const filteredUsers = data?.users.filter((u: any) => 
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     u.phone.includes(searchTerm) ||
     (u.clientCode && u.clientCode.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -132,7 +132,7 @@ export default function AdminUsers() {
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((u) => (
+                filteredUsers.map((u: any) => (
                   <tr key={u.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-4 px-4">
                       <div className="flex flex-col">

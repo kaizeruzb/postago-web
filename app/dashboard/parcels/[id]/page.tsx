@@ -104,7 +104,7 @@ export default function ParcelDetailsPage() {
   }
 
   const canPay = (parcel.status === "weighed" || parcel.status === "received_at_origin") && 
-                !parcel.payments.some(p => p.status === "completed");
+                !parcel.payments.some((p: any) => p.status === "completed");
 
   return (
     <div className="space-y-8 pb-20">
@@ -189,7 +189,7 @@ export default function ParcelDetailsPage() {
             </div>
             <div className="p-8">
               <div className="space-y-8">
-                {parcel.events.map((event, index) => (
+                {parcel.events.map((event: any, index: any) => (
                   <div key={event.id} className="relative flex gap-6">
                     {index !== parcel.events.length - 1 && (
                       <div className="absolute left-3 top-8 bottom-[-24px] w-0.5 bg-slate-100" />
@@ -251,7 +251,7 @@ export default function ParcelDetailsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  {parcel.photos.map(photo => (
+                  {parcel.photos.map((photo: any) => (
                     <div key={photo.id} className="aspect-square bg-slate-100 rounded-xl overflow-hidden border border-slate-100 hover:scale-105 transition-transform cursor-pointer">
                       <img src={photo.url} alt="Parcel" className="w-full h-full object-cover" />
                     </div>

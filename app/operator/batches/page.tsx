@@ -67,7 +67,7 @@ export default function BatchesPage() {
     }
   });
 
-  const filteredBatches = data?.batches.filter(b => 
+  const filteredBatches = data?.batches.filter((b: any) => 
     b.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (b.trackingNumber && b.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()))
   ) || [];
@@ -135,7 +135,7 @@ export default function BatchesPage() {
                   </td>
                 </tr>
               ) : (
-                filteredBatches.map((batch) => {
+                filteredBatches.map((batch: any) => {
                   const status = batchStatusMap[batch.status] || { label: batch.status, color: "bg-slate-100 text-slate-700", icon: Clock };
                   const isShipping = shippingBatchId === batch.id;
 

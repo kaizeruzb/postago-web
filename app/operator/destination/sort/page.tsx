@@ -8,13 +8,13 @@ import {
   ArrowRight, 
   Package, 
   User, 
-  MapPin,
-  CheckCircle2,
-  Loader2,
-  Box,
-  Truck,
-  ShieldAlert,
-  ClipboardList
+  MapPin, 
+  CheckCircle2, 
+  Loader2, 
+  Box, 
+  Truck, 
+  ShieldAlert, 
+  ClipboardList 
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -68,7 +68,7 @@ export default function SortingPage() {
     }
   });
 
-  const filteredParcels = data?.parcels.filter(p => 
+  const filteredParcels = data?.parcels.filter((p: any) => 
     p.trackingCode.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.user.clientCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -137,7 +137,7 @@ export default function SortingPage() {
                     type="checkbox"
                     className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
                     checked={filteredParcels.length > 0 && selectedParcels.length === filteredParcels.length}
-                    onChange={() => setSelectedParcels(selectedParcels.length === filteredParcels.length ? [] : filteredParcels.map(p => p.id))}
+                    onChange={() => setSelectedParcels(selectedParcels.length === filteredParcels.length ? [] : filteredParcels.map((p: any) => p.id))}
                   />
                 </th>
                 <th className="pb-4 pt-2 px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Посылка</th>
@@ -162,7 +162,7 @@ export default function SortingPage() {
                   </td>
                 </tr>
               ) : (
-                filteredParcels.map((parcel) => (
+                filteredParcels.map((parcel: any) => (
                   <tr 
                     key={parcel.id} 
                     className={cn(

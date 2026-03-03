@@ -54,10 +54,8 @@ export default function NewBatchPage() {
   const { data: parcelsData, isLoading: isLoadingParcels } = useQuery({
     queryKey: ["parcels-to-batch", parcelIds],
     queryFn: async () => {
-      // In a real app, you'd have an endpoint to fetch multiple parcels by ID
-      // Here we'll fetch all warehouse parcels and filter
       const res = await api<{ parcels: Parcel[] }>("/api/parcels/warehouse/all", { token: token! });
-      return res.parcels.filter(p => parcelIds.includes(p.id));
+      return res.parcels.filter((p: any) => parcelIds.includes(p.id));
     },
     enabled: !!token && parcelIds.length > 0,
   });
@@ -79,11 +77,11 @@ export default function NewBatchPage() {
 
   const filteredParcels = useMemo(() => {
     if (!selectedRouteId) return [];
-    return parcelsData?.filter(p => p.routeId === selectedRouteId) || [];
+    return parcelsData?.filter((p: any) => p.routeId === selectedRouteId) || [];
   }, [parcelsData, selectedRouteId]);
 
   const totalWeight = useMemo(() => 
-    filteredParcels.reduce((sum, p) => sum + (p.weightKg || 0), 0).toFixed(3),
+    filteredParcels.reduce((sum: any, p: any) => sum + (p.weightKg || 0), 0).toFixed(3),
     [filteredParcels]
   );
 
@@ -92,7 +90,7 @@ export default function NewBatchPage() {
     if (!selectedRouteId || filteredParcels.length === 0) return;
     createBatchMutation.mutate({
       routeId: selectedRouteId,
-      parcelIds: filteredParcels.map(p => p.id),
+      parcelIds: filteredParcels.map((p: any) => p.id),
     });
   };
 
@@ -133,7 +131,7 @@ export default function NewBatchPage() {
               <div className="h-12 bg-slate-50 animate-pulse rounded-xl" />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {routesData?.routes.map((route) => (
+                {routesData?.routes.map((route: any) => (
                   <label 
                     key={route.id}
                     className={cn(
@@ -189,7 +187,7 @@ export default function NewBatchPage() {
                   <p className="text-[10px] text-slate-300 uppercase">Выберите другой маршрут или проверьте выбор на складе</p>
                 </div>
               ) : (
-                filteredParcels.map((parcel) => (
+                filteredParcels.map((parcel: any) => (
                   <div key={parcel.id} className="p-4 flex items-center justify-between group hover:bg-slate-50 transition-colors">
                     <div className="flex flex-col">
                       <span className="text-sm font-black text-slate-900 group-hover:text-orange-600 transition-colors">{parcel.trackingCode}</span>

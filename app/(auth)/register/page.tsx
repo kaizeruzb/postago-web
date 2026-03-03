@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
@@ -11,36 +11,26 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [error, setError] = useState("");
+  const phone = searchParams.get("phone") || "";
+  const code = searchParams.get("code") || "";
 
-  useEffect(() => {
-    const p = searchParams.get("phone");
-    const c = searchParams.get("code");
-    if (p) setPhone(p);
-    if (c) setCode(c);
-    
-    if (!p || !c) {
-      router.replace("/login");
-    }
-  }, [searchParams, router]);
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("Tashkent");
+  const [error, setError] = useState("");
 
   const registerMutation = useMutation({
     mutationFn: (data: any) => api<{ token: string; user: any }>("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
     }),
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
       setAuth(res.token, res.user);
       router.push("/dashboard");
     },
     onError: (err: any) => setError(err.message),
   });
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     registerMutation.mutate({ phone, code, name, city });
@@ -56,9 +46,9 @@ function RegisterForm() {
         </div>
       )}
 
-      <form onSubmit={handleRegister} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Ваше имя</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Имя и Фамилия</label>
           <input
             type="text"
             value={name}
@@ -70,24 +60,30 @@ function RegisterForm() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Город</label>
-          <input
-            type="text"
+          <select
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ташкент"
-          />
+          >
+            <option value="Tashkent">Ташкент</option>
+            <option value="Samarkand">Самарканд</option>
+            <option value="Bukhara">Бухара</option>
+            <option value="Almaty">Алматы</option>
+            <option value="Astana">Астана</option>
+          </select>
         </div>
-        <div className="bg-blue-50 p-4 rounded-xl text-xs text-blue-600">
-          Регистрация для номера: <strong>{phone}</strong>
+        <div className="pt-2">
+          <p className="text-xs text-gray-500 mb-4 text-center">
+            Нажимая кнопку, вы соглашаетесь с правилами сервиса
+          </p>
+          <button
+            type="submit"
+            disabled={registerMutation.isPending}
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition disabled:opacity-50"
+          >
+            {registerMutation.isPending ? "Создание..." : "Зарегистрироваться"}
+          </button>
         </div>
-        <button
-          type="submit"
-          disabled={registerMutation.isPending}
-          className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition disabled:opacity-50"
-        >
-          {registerMutation.isPending ? "Регистрация..." : "Завершить"}
-        </button>
       </form>
     </div>
   );

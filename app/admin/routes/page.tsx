@@ -197,7 +197,7 @@ export default function AdminRoutes() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           [1,2,3].map(i => <div key={i} className="h-48 bg-white rounded-3xl animate-pulse border border-slate-100" />)
-        ) : data?.routes.map((route) => (
+        ) : data?.routes.map((route: any) => (
           <div key={route.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-3">

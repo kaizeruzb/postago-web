@@ -48,7 +48,7 @@ export default function AdminParcels() {
     enabled: !!token,
   });
 
-  const filteredParcels = data?.parcels.filter(p => 
+  const filteredParcels = data?.parcels.filter((p: any) => 
     p.trackingCode.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.user.clientCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.user.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -117,7 +117,7 @@ export default function AdminParcels() {
                   </td>
                 </tr>
               ) : (
-                filteredParcels.map((parcel) => (
+                filteredParcels.map((parcel: any) => (
                   <tr key={parcel.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-4 px-4">
                       <div className="flex flex-col">

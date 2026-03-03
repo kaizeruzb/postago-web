@@ -34,7 +34,7 @@ export default function LoginPage() {
       method: "POST",
       body: JSON.stringify(data),
     }),
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
       if (res.isNew) {
         router.push(`/register?phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(code)}`);
       } else if (res.token && res.user) {

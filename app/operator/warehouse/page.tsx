@@ -51,7 +51,7 @@ export default function WarehousePage() {
     enabled: !!token,
   });
 
-  const filteredParcels = data?.parcels.filter(p => 
+  const filteredParcels = data?.parcels.filter((p: any) => 
     p.trackingCode.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.user.clientCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.user.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -67,7 +67,7 @@ export default function WarehousePage() {
     if (selectedParcels.length === filteredParcels.length) {
       setSelectedParcels([]);
     } else {
-      setSelectedParcels(filteredParcels.map(p => p.id));
+      setSelectedParcels(filteredParcels.map((p: any) => p.id));
     }
   };
 
@@ -155,7 +155,7 @@ export default function WarehousePage() {
                   </td>
                 </tr>
               ) : (
-                filteredParcels.map((parcel) => (
+                filteredParcels.map((parcel: any) => (
                   <tr 
                     key={parcel.id} 
                     className={cn(

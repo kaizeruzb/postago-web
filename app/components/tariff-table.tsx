@@ -1,60 +1,83 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { api } from "../../lib/api";
-import { COUNTRY_NAMES } from "@postago/shared";
+import { api } from "@/lib/api";
+import { Truck, Ship, Plane, Train, Loader2 } from "lucide-react";
+
+const countryNames: Record<string, string> = {
+  KR: "Южная Корея",
+  CN: "Китай",
+  TR: "Турция",
+  UZ: "Узбекистан",
+  KZ: "Казахстан",
+};
 
 export function TariffTable() {
   const { data, isLoading } = useQuery({
-    queryKey: ["tariffs"],
+    queryKey: ["routes"],
     queryFn: () => api<{ routes: any[] }>("/api/tariffs/routes"),
   });
 
-  if (isLoading) return <div className="text-center py-20">Загрузка тарифов...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   const routes = data?.routes || [];
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">Наши тарифы</h2>
-          <p className="text-gray-600">Актуальные цены и сроки доставки по всем направлениям</p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="p-4 text-sm font-bold text-gray-500 uppercase">Направление</th>
-                <th className="p-4 text-sm font-bold text-gray-500 uppercase">Способ</th>
-                <th className="p-4 text-sm font-bold text-gray-500 uppercase">Тариф</th>
-                <th className="p-4 text-sm font-bold text-gray-500 uppercase">Сроки</th>
-                <th className="p-4 text-sm font-bold text-gray-500 uppercase">Статус</th>
-              </tr>
-            </thead>
-            <tbody>
-              {routes.map((route, idx) => (
-                <tr key={idx} className="border-b hover:bg-gray-50 transition duration-150">
-                  <td className="p-4">
-                    <span className="font-bold">{COUNTRY_NAMES[route.originCountry]}</span>
-                    <span className="mx-2 text-gray-400">→</span>
-                    <span className="font-bold">{COUNTRY_NAMES[route.destinationCountry]}</span>
-                  </td>
-                  <td className="p-4">
-                    {route.transportType === "air" ? "✈️ Авиа" : route.transportType === "rail" ? "🚂 Ж/Д" : route.transportType === "sea" ? "🚢 Море" : "📦 Комби"}
-                  </td>
-                  <td className="p-4 text-blue-600 font-bold">${Number(route.ratePerKg).toFixed(2)} / кг</td>
-                  <td className="p-4 text-gray-600">{route.minDays}-{route.maxDays} дней</td>
-                  <td className="p-4">
-                    <span className="px-2 py-1 text-xs font-bold bg-green-100 text-green-600 rounded-full">Активен</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <div className="overflow-x-auto bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b border-slate-50">
+            <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Направление</th>
+            <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Тип перевозки</th>
+            <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Срок</th>
+            <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Тариф (кг)</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-50">
+          {routes.map((route: any, idx: any) => (
+            <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
+              <td className="px-8 py-6">
+                <div className="flex items-center gap-3">
+                  <span className="font-black text-slate-900 uppercase">{route.originCountry}</span>
+                  <div className="h-px w-4 bg-slate-200" />
+                  <span className="font-black text-slate-900 uppercase">{route.destinationCountry}</span>
+                </div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  {countryNames[route.originCountry]} → {countryNames[route.destinationCountry]}
+                </p>
+              </td>
+              <td className="px-8 py-6">
+                <div className="flex items-center gap-2 text-slate-700">
+                  {route.transportType === 'air' && <Plane className="w-4 h-4 text-blue-500" />}
+                  {route.transportType === 'sea' && <Ship className="w-4 h-4 text-cyan-500" />}
+                  {route.transportType === 'rail' && <Train className="w-4 h-4 text-orange-500" />}
+                  {route.transportType === 'combined' && <Truck className="w-4 h-4 text-emerald-500" />}
+                  <span className="text-sm font-bold capitalize">
+                    {route.transportType === 'air' ? 'Авиа' : 
+                     route.transportType === 'sea' ? 'Море' : 
+                     route.transportType === 'rail' ? 'Ж/Д' : 'Авто'}
+                  </span>
+                </div>
+              </td>
+              <td className="px-8 py-6">
+                <span className="text-sm font-black text-slate-900">{route.minDays}-{route.maxDays}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase ml-1">дней</span>
+              </td>
+              <td className="px-8 py-6">
+                <span className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-black group-hover:bg-blue-600 group-hover:text-white transition-all">
+                  ${Number(route.ratePerKg).toFixed(2)}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

@@ -8,7 +8,8 @@ import {
   DollarSign, 
   Activity,
   ArrowUpRight,
-  Loader2
+  Loader2,
+  ShieldCheck
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -84,7 +85,7 @@ export default function AdminDashboard() {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {data?.parcelsByStatus.map((item) => {
+              {data?.parcelsByStatus.map((item: any) => {
                 const config = statusMap[item.status] || { label: item.status, color: "bg-slate-100 text-slate-700" };
                 const percentage = data.totalParcels > 0 ? (item._count / data.totalParcels) * 100 : 0;
                 

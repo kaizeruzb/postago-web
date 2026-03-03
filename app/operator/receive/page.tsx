@@ -68,7 +68,7 @@ export default function ReceivePage() {
     }
   });
 
-  const filteredParcels = data?.parcels.filter(p => 
+  const filteredParcels = data?.parcels.filter((p: any) => 
     p.trackingCode.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.user.clientCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.user.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -127,7 +127,7 @@ export default function ReceivePage() {
               </div>
             ) : (
               <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
-                {filteredParcels.map((parcel) => (
+                {filteredParcels.map((parcel: any) => (
                   <button
                     key={parcel.id}
                     onClick={() => handleSelect(parcel)}

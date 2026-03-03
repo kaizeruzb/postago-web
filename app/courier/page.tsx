@@ -86,7 +86,7 @@ export default function CourierDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {parcels.map((parcel) => (
+          {parcels.map((parcel: any) => (
             <div key={parcel.id} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
               <div className="p-6 space-y-6">
                 <div className="flex justify-between items-start">
