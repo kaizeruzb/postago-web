@@ -56,7 +56,7 @@ export default function ProfilePage() {
                 <MapPin className="w-3 h-3" />
                 Город доставки
               </label>
-              <p className="font-bold text-slate-900">Ташкент</p>
+              <p className="font-bold text-slate-900">{user.city || "Не указан"}</p>
             </div>
 
             <div className="space-y-1">

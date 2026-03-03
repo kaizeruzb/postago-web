@@ -8,6 +8,7 @@ interface User {
   name: string;
   role: string;
   clientCode?: string;
+  city?: string;
 }
 
 interface AuthState {

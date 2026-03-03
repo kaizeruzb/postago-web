@@ -37,7 +37,9 @@ interface Parcel {
   };
 }
 
-export default function NewBatchPage() {
+import { Suspense } from "react";
+
+function NewBatchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = useAuthStore((state) => state.token);
@@ -258,5 +260,13 @@ export default function NewBatchPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function NewBatchPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-orange-600 border-t-transparent" /></div>}>
+      <NewBatchContent />
+    </Suspense>
   );
 }

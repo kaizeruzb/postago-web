@@ -46,7 +46,7 @@ export default function AdminDashboard() {
     { label: "Клиентов", value: data?.totalUsers, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Всего посылок", value: data?.totalParcels, icon: Package, color: "text-purple-600", bg: "bg-purple-50" },
     { label: "За 30 дней", value: data?.parcelsThisMonth, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Выручка", value: `$${data?.totalRevenue.toFixed(2)}`, icon: DollarSign, color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Выручка", value: `$${(data?.totalRevenue ?? 0).toFixed(2)}`, icon: DollarSign, color: "text-orange-600", bg: "bg-orange-50" },
   ];
 
   return (
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {data?.parcelsByStatus.map((item: any) => {
+              {data?.parcelsByStatus?.map((item: any) => {
                 const config = statusMap[item.status] || { label: item.status, color: "bg-slate-100 text-slate-700" };
                 const percentage = data.totalParcels > 0 ? (item._count / data.totalParcels) * 100 : 0;
                 
