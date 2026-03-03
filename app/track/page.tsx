@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/app/dashboard/components/status-badge";
 
 function TrackingContent() {
