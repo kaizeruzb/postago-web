@@ -98,14 +98,14 @@ export default function AdminRoutes() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Тарифы и Маршруты</h2>
-          <p className="text-slate-500 font-medium">Управление стоимостью и сроками доставки</p>
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase">Тарифы и Маршруты</h2>
+          <p className="text-sm text-slate-500 font-medium">Управление стоимостью и сроками доставки</p>
         </div>
         <button
           onClick={() => { setIsEditing("new"); setFormData({ originCountry: "KR", destinationCountry: "UZ", transportType: "air", ratePerKg: 0, minDays: 7, maxDays: 14 }); }}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl font-black transition-all shadow-xl shadow-purple-100"
+          className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-2xl font-black transition-all shadow-xl shadow-purple-100 text-sm"
         >
           <Plus className="w-5 h-5" />
           Добавить Маршрут

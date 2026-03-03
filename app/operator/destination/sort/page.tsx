@@ -91,12 +91,12 @@ export default function SortingPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Сортировка и Таможня</h2>
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase">Сортировка и Таможня</h2>
           <p className="text-slate-500 font-medium">Обработка посылок в стране назначения</p>
         </div>
 
         {selectedParcels.length > 0 && (
-          <div className="flex gap-2 animate-in fade-in zoom-in-95">
+          <div className="flex flex-wrap gap-2 animate-in fade-in zoom-in-95">
             {statusActions.map((action) => (
               <button
                 key={action.status}
@@ -128,7 +128,7 @@ export default function SortingPage() {
           />
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-slate-100">
@@ -163,8 +163,8 @@ export default function SortingPage() {
                 </tr>
               ) : (
                 filteredParcels.map((parcel: any) => (
-                  <tr 
-                    key={parcel.id} 
+                  <tr
+                    key={parcel.id}
                     className={cn(
                       "hover:bg-slate-50 transition-colors group",
                       selectedParcels.includes(parcel.id) && "bg-blue-50/30"
@@ -206,6 +206,55 @@ export default function SortingPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile card view */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <div className="py-20 text-center">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-2" />
+              <p className="text-sm font-bold text-slate-400">Загрузка данных...</p>
+            </div>
+          ) : filteredParcels.length === 0 ? (
+            <div className="py-20 text-center text-slate-400">
+              <Box className="w-12 h-12 opacity-10 mx-auto mb-4" />
+              <p className="text-sm font-bold">Нет посылок для сортировки</p>
+            </div>
+          ) : (
+            filteredParcels.map((parcel: any) => (
+              <div
+                key={parcel.id}
+                className={cn(
+                  "p-4 rounded-2xl border border-slate-200 space-y-3 transition-colors",
+                  selectedParcels.includes(parcel.id) && "bg-blue-50/30 border-blue-200"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                      checked={selectedParcels.includes(parcel.id)}
+                      onChange={() => toggleSelect(parcel.id)}
+                    />
+                    <span className="font-black text-slate-900">{parcel.trackingCode}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-700">{parcel.user.name}</span>
+                  <span className="text-[10px] font-black text-slate-400">({parcel.user.clientCode})</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase">
+                  <MapPin className="w-3 h-3" />
+                  {parcel.user.city || "Город не указан"}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-700">{parcel.weightKg || "—"} кг</span>
+                  <StatusBadge status={parcel.status} />
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

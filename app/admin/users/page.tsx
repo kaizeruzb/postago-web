@@ -75,7 +75,7 @@ export default function AdminUsers() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Пользователи</h2>
+        <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase">Пользователи</h2>
         <p className="text-slate-500 font-medium">Управление доступом и ролями</p>
       </div>
 
@@ -104,7 +104,7 @@ export default function AdminUsers() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-slate-100">
@@ -176,6 +176,58 @@ export default function AdminUsers() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile card view */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <div className="py-20 text-center">
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin mx-auto mb-2" />
+              <p className="text-sm font-bold text-slate-400">Загрузка пользователей...</p>
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="py-20 text-center text-slate-400">
+              <User className="w-12 h-12 opacity-10 mx-auto mb-4" />
+              <p className="text-sm font-bold">Пользователи не найдены</p>
+            </div>
+          ) : (
+            filteredUsers.map((u: any) => (
+              <div key={u.id} className="p-4 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-black text-slate-900">{u.name}</span>
+                    <span className="block text-[10px] font-black text-purple-600 uppercase tracking-widest mt-0.5">
+                      {u.clientCode || "—"}
+                    </span>
+                  </div>
+                  <span className={cn(
+                    "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                    roles.find(r => r.value === u.role)?.color || "bg-slate-100 text-slate-700"
+                  )}>
+                    {roles.find(r => r.value === u.role)?.label || u.role}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-bold text-slate-700">{u.phone}</span>
+                  <span className="text-[10px] font-medium text-slate-400">{u.city || "Город не указан"}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                    <Package className="w-3.5 h-3.5 text-slate-400" />
+                    {u._count.parcels} посылок
+                  </div>
+                  <select
+                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-purple-600 outline-none cursor-pointer"
+                    value={u.role}
+                    onChange={(e) => updateRoleMutation.mutate({ id: u.id, role: e.target.value })}
+                    disabled={updateRoleMutation.isPending}
+                  >
+                    {roles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  </select>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

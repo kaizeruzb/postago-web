@@ -31,14 +31,14 @@ const navigation = [
   },
 ];
 
-export function OperatorSidebar() {
+export function OperatorSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const logout = useAuthStore((state) => state.logout);
 
   return (
-    <div className="flex h-full flex-col bg-slate-900 text-white w-64 shrink-0">
+    <div className="flex h-full flex-col bg-slate-900 text-white w-64">
       <div className="p-5 border-b border-slate-800">
-        <Link href="/operator/warehouse" className="flex items-center gap-2">
+        <Link href="/operator/warehouse" onClick={onNavigate} className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center font-black text-sm">
             PG
           </div>
@@ -55,12 +55,12 @@ export function OperatorSidebar() {
             {group.items.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/operator/warehouse" &&
-                  pathname.startsWith(item.href));
+                (item.href !== "/operator/warehouse" && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={onNavigate}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors",
                     isActive
@@ -89,6 +89,14 @@ export function OperatorSidebar() {
           Выйти
         </button>
       </div>
+    </div>
+  );
+}
+
+export function OperatorSidebar() {
+  return (
+    <div className="hidden md:flex shrink-0">
+      <OperatorSidebarContent />
     </div>
   );
 }

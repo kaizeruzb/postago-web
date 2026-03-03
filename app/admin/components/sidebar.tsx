@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  BarChart3, 
-  Users, 
-  Map, 
-  Settings, 
-  LogOut, 
+import {
+  BarChart3,
+  Users,
+  Map,
+  LogOut,
   ShieldCheck,
   Package
 } from "lucide-react";
@@ -21,23 +20,23 @@ const navigation = [
   { name: "Посылки", href: "/admin/parcels", icon: Package },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
 
   return (
-    <div className="flex h-full flex-col bg-slate-950 text-white w-64 shrink-0">
-      <div className="p-6">
-        <Link href="/admin" className="flex items-center gap-2 font-bold text-xl tracking-tight">
+    <div className="flex h-full flex-col bg-slate-950 text-white w-64">
+      <div className="p-5 border-b border-white/10">
+        <Link href="/admin" onClick={onNavigate} className="flex items-center gap-2">
           <div className="bg-purple-600 p-1.5 rounded-lg">
             <ShieldCheck className="w-6 h-6 text-white" />
           </div>
-          <span>PostaGo <span className="text-[10px] text-purple-400 uppercase tracking-widest ml-1">Admin</span></span>
+          <span className="font-bold text-lg tracking-tight">PostaGo <span className="text-[10px] text-purple-400 uppercase tracking-widest ml-1">Admin</span></span>
         </Link>
       </div>
 
-      <div className="px-6 py-4 mb-4">
+      <div className="px-4 py-4 mb-2">
         <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
           <div className="h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center text-purple-500">
             <ShieldCheck className="w-6 h-6" />
@@ -56,10 +55,11 @@ export function AdminSidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors",
-                isActive 
-                  ? "bg-purple-600 text-white" 
+                isActive
+                  ? "bg-purple-600 text-white"
                   : "text-slate-400 hover:bg-white/5 hover:text-white"
               )}
             >
@@ -82,6 +82,14 @@ export function AdminSidebar() {
           Выйти
         </button>
       </div>
+    </div>
+  );
+}
+
+export function AdminSidebar() {
+  return (
+    <div className="hidden md:flex shrink-0">
+      <AdminSidebarContent />
     </div>
   );
 }

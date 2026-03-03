@@ -52,13 +52,13 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-10">
       <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Обзор Платформы</h2>
+        <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase">Обзор Платформы</h2>
         <p className="text-slate-500 font-medium">Общие показатели работы системы</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div key={stat.label} className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className={cn("p-3 rounded-2xl", stat.bg, stat.color)}>
                 <stat.icon className="w-6 h-6" />
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
               </span>
             </div>
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-            <h3 className="text-2xl font-black text-slate-900">{stat.value}</h3>
+            <h3 className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</h3>
           </div>
         ))}
       </div>

@@ -67,7 +67,7 @@ export default function DestinationReceivePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Приемка Партий</h2>
+        <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase">Приемка Партий</h2>
         <p className="text-slate-500 font-medium">Приемка грузов, прибывших из стран отправления</p>
       </div>
 
@@ -83,7 +83,7 @@ export default function DestinationReceivePage() {
           />
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-separate border-spacing-y-3">
             <thead>
               <tr className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-4">
@@ -169,9 +169,74 @@ export default function DestinationReceivePage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile card view */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <div className="py-16 text-center bg-slate-50 rounded-2xl">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-2" />
+              <p className="text-sm font-bold text-slate-400">Загрузка данных...</p>
+            </div>
+          ) : filteredBatches.length === 0 ? (
+            <div className="py-16 text-center bg-slate-50 rounded-2xl">
+              <Layers className="w-12 h-12 text-slate-100 mx-auto mb-4" />
+              <p className="text-sm font-bold text-slate-400">Нет партий в пути</p>
+            </div>
+          ) : (
+            filteredBatches.map((batch: any) => (
+              <div key={batch.id} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-black text-slate-900">
+                    {batch.route.originCountry}
+                    <ArrowRight className="w-4 h-4 text-blue-600" />
+                    {batch.route.destinationCountry}
+                  </div>
+                  <span className="text-[10px] font-black bg-white border border-slate-200 px-2 py-0.5 rounded-full text-slate-500 uppercase">
+                    {batch.route.transportType}
+                  </span>
+                </div>
+
+                {batch.trackingNumber && (
+                  <div className="flex items-center gap-1.5 text-xs font-black text-blue-600">
+                    <Hash className="w-3.5 h-3.5" />
+                    {batch.trackingNumber}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <span>ID:</span>
+                  <span className="text-xs font-bold text-slate-700 truncate max-w-[180px]">{batch.id}</span>
+                </div>
+
+                <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Clock className="w-3.5 h-3.5 text-slate-300" />
+                    {batch.shippedAt ? new Date(batch.shippedAt).toLocaleDateString("ru-RU") : "—"}
+                  </div>
+                  <div className="flex items-center gap-1.5 font-black text-slate-900">
+                    <Package className="w-3.5 h-3.5 text-slate-400" />
+                    {batch.totalParcels} ед.
+                  </div>
+                  <span className="font-bold">
+                    {batch.totalWeight ? Number(batch.totalWeight).toFixed(2) : "—"} кг
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => receiveBatchMutation.mutate(batch.id)}
+                  disabled={receiveBatchMutation.isPending}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
+                >
+                  {receiveBatchMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  Принять
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 rounded-3xl p-8 flex gap-6">
+      <div className="bg-blue-50 border border-blue-100 rounded-3xl p-5 md:p-8 flex flex-col sm:flex-row gap-4 sm:gap-6">
         <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-100">
           <AlertCircle className="w-6 h-6" />
         </div>

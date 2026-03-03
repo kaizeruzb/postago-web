@@ -38,15 +38,15 @@ function TrackingContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-6">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 py-8 md:py-12 px-4 md:px-6">
+      <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
         {/* Search Header */}
         <div className="text-center space-y-4">
-          <Link href="/" className="inline-flex items-center gap-2 font-black text-2xl text-blue-600 mb-4">
-            <Package className="w-8 h-8" />
+          <Link href="/" className="inline-flex items-center gap-2 font-black text-xl md:text-2xl text-blue-600 mb-4">
+            <Package className="w-7 h-7 md:w-8 md:h-8" />
             PostaGo
           </Link>
-          <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Отслеживание посылки</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">Отслеживание посылки</h1>
           <p className="text-slate-500 font-medium">Введите трекинг-код, чтобы узнать статус вашего отправления</p>
         </div>
 
@@ -54,13 +54,13 @@ function TrackingContent() {
           <input
             type="text"
             placeholder="PG-KR-2026-XXXXXX"
-            className="w-full pl-6 pr-32 py-6 rounded-3xl border-2 border-white bg-white shadow-xl shadow-slate-200/50 text-xl font-black focus:border-blue-600 outline-none transition-all uppercase"
+            className="w-full pl-4 md:pl-6 pr-24 md:pr-32 py-4 md:py-6 rounded-2xl md:rounded-3xl border-2 border-white bg-white shadow-xl shadow-slate-200/50 text-base md:text-xl font-black focus:border-blue-600 outline-none transition-all uppercase"
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
           <button
             type="submit"
-            className="absolute right-3 top-3 bottom-3 bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-2xl font-black uppercase tracking-widest text-sm transition-all"
+            className="absolute right-2 md:right-3 top-2 md:top-3 bottom-2 md:bottom-3 bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-8 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-xs md:text-sm transition-all"
           >
             Найти
           </button>
@@ -83,15 +83,15 @@ function TrackingContent() {
         ) : parcel ? (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Quick Status Card */}
-            <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-              <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
-                <div className="space-y-4">
+            <div className="bg-slate-900 text-white p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+              <div className="relative z-10 flex flex-col md:flex-row justify-between gap-6 md:gap-8">
+                <div className="space-y-3 md:space-y-4">
                   <div className="flex items-center gap-3">
                     <span className="px-3 py-1 bg-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest">Статус</span>
                     <StatusBadge status={parcel.status} />
                   </div>
-                  <h2 className="text-4xl font-black tracking-tighter uppercase">{parcel.trackingCode}</h2>
-                  <div className="flex items-center gap-4 text-sm font-bold text-slate-400">
+                  <h2 className="text-2xl md:text-4xl font-black tracking-tighter uppercase break-all">{parcel.trackingCode}</h2>
+                  <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm font-bold text-slate-400">
                     <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {parcel.route.originCountry} → {parcel.route.destinationCountry}</span>
                     <span className="h-1 w-1 rounded-full bg-slate-700" />
                     <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> Обновлено {new Date(parcel.updatedAt).toLocaleDateString("ru-RU")}</span>
@@ -110,16 +110,16 @@ function TrackingContent() {
 
             {/* Timeline */}
             <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
-              <div className="p-8 border-b border-slate-50 bg-slate-50/30">
+              <div className="p-5 md:p-8 border-b border-slate-50 bg-slate-50/30">
                 <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-600" />
                   История перемещений
                 </h3>
               </div>
-              <div className="p-8">
-                <div className="space-y-10">
+              <div className="p-5 md:p-8">
+                <div className="space-y-8 md:space-y-10">
                   {parcel.events.map((event: any, index: number) => (
-                    <div key={event.id} className="relative flex gap-8">
+                    <div key={event.id} className="relative flex gap-4 md:gap-8">
                       {index !== parcel.events.length - 1 && (
                         <div className="absolute left-4 top-10 bottom-[-30px] w-0.5 bg-slate-100" />
                       )}

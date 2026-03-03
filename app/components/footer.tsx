@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="py-20 bg-white border-t border-gray-100">
+    <footer className="py-12 md:py-20 bg-white border-t border-gray-100">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap -mx-4">
           <div className="w-full lg:w-1/3 px-4 mb-12 lg:mb-0">
@@ -46,7 +46,7 @@ export function Footer() {
             </div>
           </div>
         </div>
-        <div className="pt-20 text-center">
+        <div className="pt-10 md:pt-20 text-center">
           <p className="text-sm text-gray-400">© {new Date().getFullYear()} PostaGo. Все права защищены.</p>
         </div>
       </div>

@@ -75,7 +75,7 @@ export default function WarehousePage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Складской Учет</h2>
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase">Складской Учет</h2>
           <p className="text-slate-500 font-medium">Управление текущими остатками на складе</p>
         </div>
 
@@ -120,7 +120,7 @@ export default function WarehousePage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-slate-100">
@@ -218,6 +218,66 @@ export default function WarehousePage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <div className="py-16 text-center">
+              <Loader2 className="w-8 h-8 text-orange-600 animate-spin mx-auto mb-2" />
+              <p className="text-sm font-bold text-slate-400">Загрузка данных...</p>
+            </div>
+          ) : filteredParcels.length === 0 ? (
+            <div className="py-16 text-center">
+              <Package className="w-12 h-12 text-slate-100 mx-auto mb-4" />
+              <p className="text-sm font-bold text-slate-400">На складе пусто</p>
+            </div>
+          ) : filteredParcels.map((parcel: any) => (
+            <div
+              key={parcel.id}
+              className={cn(
+                "bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3 transition-colors",
+                selectedParcels.includes(parcel.id) && "bg-orange-50/40 border-orange-200"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-600 shrink-0"
+                  checked={selectedParcels.includes(parcel.id)}
+                  onChange={() => toggleSelect(parcel.id)}
+                />
+                <span className="font-black text-slate-900 text-sm">{parcel.trackingCode}</span>
+              </div>
+
+              <div className="flex items-center gap-2 pl-8">
+                <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase">
+                  {parcel.user.clientCode}
+                </span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase">{parcel.user.name}</span>
+              </div>
+
+              <div className="flex items-center justify-between pl-8 gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 text-xs font-black text-slate-700">
+                  {parcel.route.originCountry}
+                  <ArrowRight className="w-3 h-3 text-slate-300" />
+                  {parcel.route.destinationCountry}
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                  <Scale className="w-3.5 h-3.5 text-slate-400" />
+                  {parcel.weightKg ? `${parcel.weightKg} кг` : "—"}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pl-8 gap-2">
+                <StatusBadge status={parcel.status} />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {new Date(parcel.createdAt).toLocaleDateString("ru-RU")}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

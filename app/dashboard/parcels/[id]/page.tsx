@@ -152,8 +152,8 @@ export default function ParcelDetailsPage() {
         </Link>
         <div>
           <p className="text-slate-500 text-sm">Детали посылки</p>
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
+            <h2 className="text-lg md:text-2xl font-black text-slate-900 tracking-tight break-all">
               {parcel.trackingCode}
             </h2>
             <StatusBadge status={parcel.status} />
@@ -162,13 +162,13 @@ export default function ParcelDetailsPage() {
       </div>
 
       {/* Tracking Code — big copy block */}
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
+      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-4 md:p-5 text-white shadow-lg">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-blue-200 text-xs font-medium mb-1">
               Трекинг-код
             </p>
-            <span className="text-2xl font-black tracking-wider">
+            <span className="text-lg md:text-2xl font-black tracking-wider break-all">
               {parcel.trackingCode}
             </span>
           </div>

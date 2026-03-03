@@ -57,7 +57,7 @@ export default function AdminParcels() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Все Посылки</h2>
+        <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase">Все Посылки</h2>
         <p className="text-slate-500 font-medium">Мониторинг всех отправлений платформы</p>
       </div>
 
@@ -90,7 +90,7 @@ export default function AdminParcels() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-slate-100">
@@ -156,6 +156,48 @@ export default function AdminParcels() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile card view */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <div className="py-20 text-center">
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin mx-auto mb-2" />
+              <p className="text-sm font-bold text-slate-400">Загрузка данных...</p>
+            </div>
+          ) : filteredParcels.length === 0 ? (
+            <div className="py-20 text-center text-slate-400">
+              <Package className="w-12 h-12 opacity-10 mx-auto mb-4" />
+              <p className="text-sm font-bold">Ничего не найдено</p>
+            </div>
+          ) : (
+            filteredParcels.map((parcel: any) => (
+              <div key={parcel.id} className="p-4 rounded-2xl border border-slate-200 space-y-3">
+                <span className="font-black text-slate-900">{parcel.trackingCode}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded uppercase">
+                    {parcel.user.clientCode}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">{parcel.user.name}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-black text-slate-700">
+                  {parcel.route.originCountry}
+                  <ArrowRight className="w-3 h-3 text-slate-300" />
+                  {parcel.route.destinationCountry}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-700">
+                    {parcel.weightKg ? `${parcel.weightKg} кг` : "—"}
+                  </span>
+                  <StatusBadge status={parcel.status} />
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {new Date(parcel.createdAt).toLocaleDateString("ru-RU")}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

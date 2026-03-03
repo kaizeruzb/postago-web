@@ -26,10 +26,10 @@ export function FAQ() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-12 md:py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">Часто задаваемые вопросы</h2>
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Часто задаваемые вопросы</h2>
           <p className="text-gray-600">Все, что вы хотели знать о нашей работе</p>
         </div>
 
@@ -38,7 +38,7 @@ export function FAQ() {
             <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <button
                 onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
-                className="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition duration-150"
+                className="w-full p-4 md:p-6 text-left flex justify-between items-center hover:bg-gray-50 transition duration-150"
               >
                 <span className="font-bold text-gray-900">{faq.question}</span>
                 <span className={cn(
@@ -47,7 +47,7 @@ export function FAQ() {
                 )}>+</span>
               </button>
               {openIdx === idx && (
-                <div className="p-6 pt-0 text-gray-600 border-t border-gray-50">
+                <div className="p-4 md:p-6 pt-0 text-gray-600 border-t border-gray-50 text-sm md:text-base">
                   {faq.answer}
                 </div>
               )}

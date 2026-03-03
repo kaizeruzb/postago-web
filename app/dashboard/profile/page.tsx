@@ -21,9 +21,9 @@ export default function ProfilePage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-8 bg-slate-50 border-b border-slate-100 flex flex-col items-center">
-          <div className="h-24 w-24 rounded-full bg-blue-600 flex items-center justify-center text-white mb-4 shadow-lg shadow-blue-100">
-            <User className="w-12 h-12" />
+        <div className="p-6 md:p-8 bg-slate-50 border-b border-slate-100 flex flex-col items-center">
+          <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-blue-600 flex items-center justify-center text-white mb-4 shadow-lg shadow-blue-100">
+            <User className="w-10 h-10 md:w-12 md:h-12" />
           </div>
           <h3 className="text-xl font-black text-slate-900">{user.name}</h3>
           <p className="text-blue-600 font-bold text-sm tracking-widest uppercase mt-1">
@@ -31,8 +31,8 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <div className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="p-5 md:p-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 <Phone className="w-3 h-3" />
