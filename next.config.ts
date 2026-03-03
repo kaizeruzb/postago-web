@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["shared"],
+  transpilePackages: ["@postago/shared"],
 };
 
 export default nextConfig;
