@@ -7,27 +7,7 @@ import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { ParcelCard } from "./components/parcel-card";
 import { useState } from "react";
-
-const WAREHOUSES = [
-  {
-    country: "Южная Корея",
-    city: "Сеул",
-    address: "서울특별시 구로구 디지털로 300, 1층",
-    flag: "🇰🇷",
-  },
-  {
-    country: "Китай",
-    city: "Гуанчжоу",
-    address: "广州市白云区机场路888号, 1楼",
-    flag: "🇨🇳",
-  },
-  {
-    country: "Турция",
-    city: "Стамбул",
-    address: "Laleli, Ordu Cd. No:12, Fatih/İstanbul",
-    flag: "🇹🇷",
-  },
-];
+import { WAREHOUSES } from "@/lib/constants";
 
 function WelcomeScreen({ clientCode }: { clientCode: string }) {
   const [copied, setCopied] = useState(false);

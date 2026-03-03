@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Package, MapPin, Scale, Calendar, ArrowRight } from "lucide-react";
+import { Package, MapPin, Scale, Calendar, ArrowRight, DollarSign } from "lucide-react";
 import { StatusBadge } from "./status-badge";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ interface Parcel {
     originCountry: string;
     destinationCountry: string;
     transportType: string;
+    ratePerKg?: number;
   };
   weightKg?: number;
   finalCost?: number;
@@ -78,13 +79,16 @@ export function ParcelCard({ parcel }: { parcel: Parcel }) {
           </div>
         </div>
 
+        {/* Payment Status */}
+        <PaymentStatus parcel={parcel} />
+
         <div className="flex items-center justify-between pt-4 border-t border-slate-50">
           <div className="flex items-center gap-2 text-slate-400">
             <Calendar className="w-4 h-4" />
             <span className="text-xs">{date}</span>
           </div>
           
-          <Link 
+          <Link
             href={`/dashboard/parcels/${parcel.id}`}
             className="text-sm font-bold text-blue-600 flex items-center gap-1 hover:gap-2 transition-all"
           >
@@ -93,6 +97,46 @@ export function ParcelCard({ parcel }: { parcel: Parcel }) {
           </Link>
         </div>
       </div>
+    </div>
+  );
+}
+
+const WEIGHED_STATUSES = new Set([
+  "weighed", "in_batch", "shipped", "in_transit", "customs",
+  "received_at_destination", "sorting", "out_for_delivery", "delivered",
+]);
+
+const PAID_STATUSES = new Set(["paid", "delivered"]);
+
+function PaymentStatus({ parcel }: { parcel: Parcel }) {
+  if (PAID_STATUSES.has(parcel.status)) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg mb-4">
+        <DollarSign className="w-4 h-4 text-green-600" />
+        <span className="text-sm font-medium text-green-700">
+          Оплачено {parcel.finalCost ? `— $${parcel.finalCost.toFixed(2)}` : ""}
+        </span>
+      </div>
+    );
+  }
+
+  if (WEIGHED_STATUSES.has(parcel.status) && parcel.finalCost) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg mb-4">
+        <DollarSign className="w-4 h-4 text-amber-600" />
+        <span className="text-sm font-medium text-amber-700">
+          К оплате: ${parcel.finalCost.toFixed(2)}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg mb-4">
+      <Scale className="w-4 h-4 text-slate-400" />
+      <span className="text-xs text-slate-500">
+        Ожидает взвешивания — стоимость будет рассчитана на складе
+      </span>
     </div>
   );
 }
