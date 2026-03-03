@@ -114,7 +114,7 @@ function PaymentStatus({ parcel }: { parcel: Parcel }) {
       <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg mb-4">
         <DollarSign className="w-4 h-4 text-green-600" />
         <span className="text-sm font-medium text-green-700">
-          Оплачено {parcel.finalCost ? `— $${parcel.finalCost.toFixed(2)}` : ""}
+          Оплачено {parcel.finalCost ? `— $${Number(parcel.finalCost).toFixed(2)}` : ""}
         </span>
       </div>
     );
@@ -125,7 +125,7 @@ function PaymentStatus({ parcel }: { parcel: Parcel }) {
       <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg mb-4">
         <DollarSign className="w-4 h-4 text-amber-600" />
         <span className="text-sm font-medium text-amber-700">
-          К оплате: ${parcel.finalCost.toFixed(2)}
+          К оплате: ${Number(parcel.finalCost).toFixed(2)}
         </span>
       </div>
     );
