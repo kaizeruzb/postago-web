@@ -19,7 +19,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-col bg-slate-900 text-white w-64">
       <div className="p-6">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
+        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl tracking-tight">
           <div className="bg-blue-600 p-1.5 rounded-lg">
             <Package className="w-6 h-6 text-white" />
           </div>
