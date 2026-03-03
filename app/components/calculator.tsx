@@ -119,7 +119,7 @@ export function Calculator() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-3xl font-black text-blue-600">${est.totalCost.toFixed(2)}</p>
+                          <p className="text-3xl font-black text-blue-600">${Number(est.totalCost).toFixed(2)}</p>
                           <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Итого (USD)</p>
                         </div>
                       </div>

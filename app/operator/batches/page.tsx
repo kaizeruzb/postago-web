@@ -180,7 +180,7 @@ export default function BatchesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-6 bg-slate-50 border-y border-slate-100 group-hover:bg-slate-100/50 transition-colors">
-                        <span className="text-sm font-black text-slate-900">{batch.totalWeight?.toFixed(2) || "—"}</span>
+                        <span className="text-sm font-black text-slate-900">{batch.totalWeight ? Number(batch.totalWeight).toFixed(2) : "—"}</span>
                         <span className="text-[10px] font-bold text-slate-400 uppercase ml-1">кг</span>
                       </td>
                       <td className="px-6 py-6 bg-slate-50 rounded-r-3xl border-y border-r border-slate-100 group-hover:bg-slate-100/50 transition-colors">

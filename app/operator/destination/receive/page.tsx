@@ -149,7 +149,7 @@ export default function DestinationReceivePage() {
                           {batch.totalParcels} ед.
                         </div>
                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
-                          {batch.totalWeight?.toFixed(2) || "—"} кг
+                          {batch.totalWeight ? Number(batch.totalWeight).toFixed(2) : "—"} кг
                         </div>
                       </div>
                     </td>

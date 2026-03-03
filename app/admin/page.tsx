@@ -46,7 +46,7 @@ export default function AdminDashboard() {
     { label: "Клиентов", value: data?.totalUsers, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Всего посылок", value: data?.totalParcels, icon: Package, color: "text-purple-600", bg: "bg-purple-50" },
     { label: "За 30 дней", value: data?.parcelsThisMonth, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Выручка", value: `$${(data?.totalRevenue ?? 0).toFixed(2)}`, icon: DollarSign, color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Выручка", value: `$${Number(data?.totalRevenue ?? 0).toFixed(2)}`, icon: DollarSign, color: "text-orange-600", bg: "bg-orange-50" },
   ];
 
   return (

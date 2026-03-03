@@ -83,7 +83,7 @@ function NewBatchContent() {
   }, [parcelsData, selectedRouteId]);
 
   const totalWeight = useMemo(() => 
-    filteredParcels.reduce((sum: any, p: any) => sum + (p.weightKg || 0), 0).toFixed(3),
+    filteredParcels.reduce((sum: number, p: any) => sum + Number(p.weightKg || 0), 0).toFixed(3),
     [filteredParcels]
   );
 
