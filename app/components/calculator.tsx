@@ -20,7 +20,10 @@ export function Calculator() {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["calculate", origin, destination, weight],
-    queryFn: () => api<{ estimates: any[] }>(`/api/tariffs/calculate?originCountry=${origin}&destinationCountry=${destination}&weightKg=${weight}`),
+    queryFn: () => api<{ estimates: any[] }>("/api/tariffs/calculate", {
+      method: "POST",
+      body: JSON.stringify({ originCountry: origin, destinationCountry: destination, weightKg: parseFloat(weight) }),
+    }),
     enabled: !!weight && parseFloat(weight) > 0,
   });
 
@@ -116,7 +119,7 @@ export function Calculator() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-3xl font-black text-blue-600">${est.cost.toFixed(2)}</p>
+                          <p className="text-3xl font-black text-blue-600">${est.totalCost.toFixed(2)}</p>
                           <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Итого (USD)</p>
                         </div>
                       </div>
