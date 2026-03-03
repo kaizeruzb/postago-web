@@ -1,23 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { PlusCircle, PackageSearch, ClipboardCopy, MapPin, ArrowRight } from "lucide-react";
+import { PlusCircle, MapPin, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { ParcelCard } from "./components/parcel-card";
-import { useState } from "react";
 import { WAREHOUSES } from "@/lib/constants";
 
-function WelcomeScreen({ clientCode }: { clientCode: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(clientCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
+function WelcomeScreen() {
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -26,27 +17,6 @@ function WelcomeScreen({ clientCode }: { clientCode: string }) {
         </h2>
         <p className="text-slate-500 mt-2 max-w-lg mx-auto">
           Отправляйте посылки из Кореи, Китая и Турции в Узбекистан быстро и надёжно
-        </p>
-      </div>
-
-      {/* Client Code */}
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white text-center shadow-lg">
-        <p className="text-blue-200 text-sm font-medium mb-2">Ваш код клиента</p>
-        <div className="flex items-center justify-center gap-3">
-          <span className="text-3xl font-black tracking-wider">{clientCode}</span>
-          <button
-            onClick={handleCopy}
-            className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-            title="Скопировать"
-          >
-            <ClipboardCopy className="w-5 h-5" />
-          </button>
-        </div>
-        {copied && (
-          <p className="text-blue-200 text-xs mt-2">Скопировано!</p>
-        )}
-        <p className="text-blue-200 text-sm mt-3">
-          Наклейте этот код на посылку при отправке на склад
         </p>
       </div>
 
@@ -63,7 +33,7 @@ function WelcomeScreen({ clientCode }: { clientCode: string }) {
             {
               step: 2,
               title: "Отнесите посылку на наш склад",
-              desc: `Наклейте код ${clientCode} и сдайте посылку на ближайший склад`,
+              desc: "Наклейте трекинг-код (выдаётся после оформления) и сдайте посылку на склад",
             },
             {
               step: 3,
@@ -166,7 +136,7 @@ export default function DashboardPage() {
   const parcels = data?.parcels || [];
 
   if (parcels.length === 0) {
-    return <WelcomeScreen clientCode={user?.clientCode || "PG-000000"} />;
+    return <WelcomeScreen />;
   }
 
   return (
