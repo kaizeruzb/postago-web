@@ -29,8 +29,7 @@ interface UserData {
 
 const roles = [
   { value: "client", label: "Клиент", color: "bg-blue-100 text-blue-700" },
-  { value: "operator_origin", label: "Опер. Склада (Отпр)", color: "bg-orange-100 text-orange-700" },
-  { value: "operator_destination", label: "Опер. Склада (Назн)", color: "bg-cyan-100 text-cyan-700" },
+  { value: "operator", label: "Оператор", color: "bg-orange-100 text-orange-700" },
   { value: "courier", label: "Курьер", color: "bg-green-100 text-green-700" },
   { value: "admin", label: "Админ", color: "bg-purple-100 text-purple-700" },
 ];

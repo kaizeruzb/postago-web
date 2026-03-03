@@ -54,7 +54,7 @@ export default function LoginPage() {
         setAuth(res.token, res.user);
         const role = res.user.role;
         if (role === "admin") router.push("/admin");
-        else if (role === "operator_origin" || role === "operator_destination") router.push("/operator");
+        else if (role === "operator") router.push("/operator");
         else if (role === "courier") router.push("/courier");
         else router.push("/dashboard");
       }
