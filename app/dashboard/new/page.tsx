@@ -1,21 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  ArrowRight,
   Send,
   Info,
   Scale,
   Package,
-  Calculator,
   CheckCircle2,
   ClipboardCopy,
   MapPin,
-  ArrowRight,
   Truck,
   RotateCcw,
+  Plane,
+  Train,
+  Ship,
+  Combine,
+  Calculator,
+  ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
@@ -40,30 +45,57 @@ interface CreatedParcel {
   estimatedCost: number | null;
 }
 
-function groupRoutesByOrigin(routes: Route[]): [string, Route[]][] {
-  const groups = new Map<string, Route[]>();
-  for (const route of routes) {
-    const list = groups.get(route.originCountry) || [];
-    list.push(route);
-    groups.set(route.originCountry, list);
-  }
-  return Array.from(groups.entries());
-}
+const TRANSPORT_ICONS: Record<string, typeof Plane> = {
+  air: Plane,
+  rail: Train,
+  sea: Ship,
+  combined: Combine,
+};
 
 export default function NewParcelPage() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
 
+  // Wizard state
+  const [step, setStep] = useState(1);
+
+  // Form state
+  const [originCountry, setOriginCountry] = useState("");
   const [routeId, setRouteId] = useState("");
   const [description, setDescription] = useState("");
-  const [weightKg, setWeightKg] = useState<string>("");
-  const [declaredValue, setDeclaredValue] = useState<string>("");
+  const [weightKg, setWeightKg] = useState("");
+  const [declaredValue, setDeclaredValue] = useState("");
   const [createdParcel, setCreatedParcel] = useState<CreatedParcel | null>(null);
 
   const { data: routesData, isLoading: isLoadingRoutes } = useQuery({
     queryKey: ["routes"],
     queryFn: () => api<{ routes: Route[] }>("/api/tariffs/routes"),
   });
+
+  // Filter routes by selected origin country
+  const availableRoutes = useMemo(
+    () => routesData?.routes.filter((r: Route) => r.originCountry === originCountry) || [],
+    [routesData, originCountry]
+  );
+
+  const selectedRoute = availableRoutes.find((r: Route) => r.id === routeId);
+  const estimatedCost =
+    selectedRoute && weightKg
+      ? (selectedRoute.ratePerKg * parseFloat(weightKg)).toFixed(2)
+      : null;
+
+  const selectedWarehouse = WAREHOUSES.find((w) => w.originCode === originCountry);
+
+  // Available origin countries (only those that have routes)
+  const originCountries = useMemo(() => {
+    if (!routesData?.routes) return [];
+    const codes = Array.from(new Set(routesData.routes.map((r: Route) => r.originCountry))) as string[];
+    return codes.map((code) => ({
+      code,
+      name: COUNTRY_NAMES[code] || code,
+      flag: WAREHOUSES.find((w) => w.originCode === code)?.flag || "",
+    }));
+  }, [routesData]);
 
   const createParcelMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
@@ -82,16 +114,15 @@ export default function NewParcelPage() {
         weightKg: weight,
         estimatedCost: weight ? route.ratePerKg * weight : null,
       });
+      setStep(4);
     },
     onError: (error: Error) => {
       alert(`Ошибка: ${error.message}`);
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!routeId) return alert("Выберите маршрут");
-
+  const handleSubmit = () => {
+    if (!routeId) return;
     createParcelMutation.mutate({
       routeId,
       description,
@@ -100,116 +131,233 @@ export default function NewParcelPage() {
     });
   };
 
-  const selectedRoute = routesData?.routes.find((r: Route) => r.id === routeId);
-  const estimatedCost =
-    selectedRoute && weightKg
-      ? (selectedRoute.ratePerKg * parseFloat(weightKg)).toFixed(2)
-      : null;
-
   // --- Success Screen ---
-  if (createdParcel) {
+  if (step === 4 && createdParcel) {
     return <SuccessScreen parcel={createdParcel} />;
   }
 
-  // --- Form ---
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard"
+        <button
+          onClick={() => (step === 1 ? router.push("/dashboard") : setStep(step - 1))}
           className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-slate-200"
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
-        </Link>
+        </button>
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             Новая посылка
           </h2>
-          <p className="text-slate-500">
-            Заполните данные для оформления заказа
-          </p>
+          <p className="text-slate-500 text-sm">Шаг {step} из 3</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Route Selection */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-slate-900 font-bold">
-            <Calculator className="w-5 h-5 text-blue-600" />
-            <h3>Маршрут и Тариф</h3>
+      {/* Progress bar */}
+      <div className="flex gap-2">
+        {[1, 2, 3].map((s) => (
+          <div
+            key={s}
+            className={`h-1.5 flex-1 rounded-full transition-colors ${
+              s <= step ? "bg-blue-600" : "bg-slate-200"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Step 1: Origin Country */}
+      {step === 1 && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 font-bold">
+              <MapPin className="w-5 h-5 text-blue-600" />
+              <h3>Откуда отправляете?</h3>
+            </div>
+
+            {isLoadingRoutes ? (
+              <div className="h-12 bg-slate-100 animate-pulse rounded-xl" />
+            ) : (
+              <div className="relative">
+                <select
+                  value={originCountry}
+                  onChange={(e) => {
+                    setOriginCountry(e.target.value);
+                    setRouteId("");
+                  }}
+                  className="w-full appearance-none px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg font-medium bg-white"
+                >
+                  <option value="">Выберите страну</option>
+                  {originCountries.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+              </div>
+            )}
           </div>
 
-          {isLoadingRoutes ? (
-            <div className="h-12 bg-slate-100 animate-pulse rounded-xl" />
-          ) : (
-            <div className="space-y-5">
-              {groupRoutesByOrigin(routesData?.routes || []).map(
-                ([origin, routes]) => {
-                  const wh = WAREHOUSES.find((w) => w.originCode === origin);
-                  return (
-                    <div key={origin}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-lg">{wh?.flag}</span>
-                        <span className="text-sm font-bold text-slate-700">
-                          Из {COUNTRY_NAMES[origin] ?? origin}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {routes.map((route) => (
-                          <label
-                            key={route.id}
-                            className={`
-                              relative flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all
-                              ${
-                                routeId === route.id
-                                  ? "border-blue-600 bg-blue-50/50 shadow-sm"
-                                  : "border-slate-100 hover:border-slate-200 bg-slate-50/50"
-                              }
-                            `}
-                          >
-                            <input
-                              type="radio"
-                              name="routeId"
-                              value={route.id}
-                              checked={routeId === route.id}
-                              onChange={(e) => setRouteId(e.target.value)}
-                              className="sr-only"
-                            />
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="text-sm font-bold text-slate-900">
-                                → {COUNTRY_NAMES[route.destinationCountry]}
-                              </span>
-                              <span className="text-xs font-bold text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-100">
-                                ${route.ratePerKg}/кг
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-[11px] text-slate-500 font-medium">
-                              <span>
-                                {TRANSPORT_TYPES[route.transportType]}
-                              </span>
-                              <span>
-                                {route.minDays}-{route.maxDays} дней
-                              </span>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-              )}
+          {/* Warehouse info */}
+          {selectedWarehouse && (
+            <div className="bg-blue-50 rounded-2xl border border-blue-100 p-5 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{selectedWarehouse.flag}</span>
+                <div>
+                  <p className="font-bold text-slate-900">
+                    Пункт приёма — {selectedWarehouse.city}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 ml-9">
+                <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-slate-700">{selectedWarehouse.address}</p>
+              </div>
+              <p className="text-xs text-slate-500 ml-9">
+                Принесите посылку по этому адресу после оформления заказа
+              </p>
             </div>
           )}
-        </div>
 
-        {/* Parcel Details */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-          <div className="flex items-center gap-2 text-slate-900 font-bold">
-            <Package className="w-5 h-5 text-blue-600" />
-            <h3>Детали посылки</h3>
+          <button
+            onClick={() => setStep(2)}
+            disabled={!originCountry}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-lg transition-all ${
+              originCountry
+                ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed"
+            }`}
+          >
+            Дальше
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Step 2: Transport Type + Weight */}
+      {step === 2 && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 font-bold">
+              <Truck className="w-5 h-5 text-blue-600" />
+              <h3>Тип перевозки</h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {availableRoutes.map((route: Route) => {
+                const Icon = TRANSPORT_ICONS[route.transportType] || Truck;
+                return (
+                  <label
+                    key={route.id}
+                    className={`relative flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                      routeId === route.id
+                        ? "border-blue-600 bg-blue-50/50 shadow-sm"
+                        : "border-slate-100 hover:border-slate-200 bg-slate-50/50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="routeId"
+                      value={route.id}
+                      checked={routeId === route.id}
+                      onChange={(e) => setRouteId(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        routeId === route.id
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-900">
+                          {TRANSPORT_TYPES[route.transportType]}
+                        </span>
+                        <span className="text-sm font-bold text-blue-600">
+                          ${route.ratePerKg}/кг
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <span className="text-xs text-slate-500">
+                          → {COUNTRY_NAMES[route.destinationCountry]}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          {route.minDays}–{route.maxDays} дней
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="space-y-4">
+          {/* Weight + Cost Calculator */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 font-bold">
+              <Scale className="w-5 h-5 text-blue-600" />
+              <h3>Вес посылки</h3>
+            </div>
+
+            <div>
+              <input
+                type="number"
+                step="0.1"
+                placeholder="Введите приблизительный вес (кг)"
+                className="w-full px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg"
+                value={weightKg}
+                onChange={(e) => setWeightKg(e.target.value)}
+              />
+              <p className="text-xs text-slate-400 mt-2">
+                Окончательный вес определяется на складе при приёмке
+              </p>
+            </div>
+
+            {/* Live cost */}
+            {estimatedCost && (
+              <div className="flex items-center justify-between bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <div className="flex items-center gap-2">
+                  <Calculator className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-medium text-slate-700">
+                    Предварительная стоимость
+                  </span>
+                </div>
+                <span className="text-xl font-black text-blue-600">
+                  ${estimatedCost}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => setStep(3)}
+            disabled={!routeId}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-lg transition-all ${
+              routeId
+                ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed"
+            }`}
+          >
+            Дальше
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Step 3: Description + Declared Value */}
+      {step === 3 && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <div className="flex items-center gap-2 text-slate-900 font-bold">
+              <Package className="w-5 h-5 text-blue-600" />
+              <h3>Детали посылки</h3>
+            </div>
+
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-1.5">
                 Что внутри?
@@ -222,76 +370,67 @@ export default function NewParcelPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-slate-400" />
-                  Приблизительный вес (кг)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="0.0"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(e.target.value)}
-                />
-                <p className="text-[10px] text-slate-400 mt-1.5 leading-relaxed">
-                  Окончательный вес будет определен оператором на складе при
-                  приемке.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                  Объявленная стоимость ($)
-                </label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                  value={declaredValue}
-                  onChange={(e) => setDeclaredValue(e.target.value)}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                Объявленная стоимость ($)
+              </label>
+              <input
+                type="number"
+                placeholder="0.00"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                value={declaredValue}
+                onChange={(e) => setDeclaredValue(e.target.value)}
+              />
             </div>
           </div>
-        </div>
 
-        {/* Price Preview & Submit */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-4">
-          <div className="flex items-center gap-4">
-            {estimatedCost && (
-              <div className="bg-blue-600 text-white px-6 py-4 rounded-2xl shadow-lg shadow-blue-200">
-                <p className="text-[10px] font-bold uppercase tracking-wider opacity-80 mb-1">
-                  Предварительно
-                </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black">${estimatedCost}</span>
-                  <span className="text-sm font-bold opacity-80">USD</span>
-                </div>
+          {/* Order summary */}
+          <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
+            <p className="text-sm font-bold text-slate-700">Ваш заказ</p>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div className="flex justify-between">
+                <span>Маршрут</span>
+                <span className="font-medium text-slate-900">
+                  {selectedWarehouse?.flag}{" "}
+                  {COUNTRY_NAMES[selectedRoute?.originCountry || ""]} →{" "}
+                  {COUNTRY_NAMES[selectedRoute?.destinationCountry || ""]}
+                </span>
               </div>
-            )}
-            <div className="flex items-start gap-2 max-w-xs text-slate-400">
-              <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <p className="text-[10px] leading-relaxed">
-                Стоимость может измениться после точного взвешивания на складе
-                отправителя.
+              <div className="flex justify-between">
+                <span>Тип</span>
+                <span className="font-medium text-slate-900">
+                  {TRANSPORT_TYPES[selectedRoute?.transportType || ""]}
+                </span>
+              </div>
+              {weightKg && (
+                <div className="flex justify-between">
+                  <span>Вес</span>
+                  <span className="font-medium text-slate-900">{weightKg} кг</span>
+                </div>
+              )}
+              {estimatedCost && (
+                <div className="flex justify-between border-t border-slate-200 pt-2">
+                  <span className="font-bold text-slate-900">Стоимость</span>
+                  <span className="font-black text-blue-600">${estimatedCost}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-start gap-2 pt-1">
+              <Info className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-slate-400">
+                Финальная стоимость рассчитывается после взвешивания на складе
               </p>
             </div>
           </div>
 
           <button
-            type="submit"
-            disabled={createParcelMutation.isPending || !routeId}
-            className={`
-              w-full md:w-auto min-w-[200px] flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black transition-all shadow-xl
-              ${
-                createParcelMutation.isPending || !routeId
-                  ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                  : "bg-slate-900 text-white hover:bg-slate-800 hover:-translate-y-1 active:translate-y-0"
-              }
-            `}
+            onClick={handleSubmit}
+            disabled={createParcelMutation.isPending}
+            className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold text-lg transition-all shadow-lg ${
+              createParcelMutation.isPending
+                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
           >
             {createParcelMutation.isPending ? (
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -303,7 +442,7 @@ export default function NewParcelPage() {
             )}
           </button>
         </div>
-      </form>
+      )}
     </div>
   );
 }
