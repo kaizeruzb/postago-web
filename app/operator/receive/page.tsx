@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   User,
@@ -15,6 +15,8 @@ import {
   Warehouse,
   ArrowRight,
   RotateCcw,
+  Clock,
+  Package,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -47,12 +49,27 @@ const STEP_LABELS = [
 
 export default function ReceivePage() {
   const token = useAuthStore((state) => state.token);
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>(1);
   const [trackingCode, setTrackingCode] = useState("");
   const [parcel, setParcel] = useState<ParcelData | null>(null);
   const [weight, setWeight] = useState("");
   const [calculatedCost, setCalculatedCost] = useState<number | null>(null);
   const [searchError, setSearchError] = useState("");
+
+  // Fetch pending parcels (weighed = awaiting payment, paid = awaiting acceptance)
+  const { data: pendingData } = useQuery({
+    queryKey: ["pending-parcels"],
+    queryFn: async () => {
+      const [weighedRes, paidRes] = await Promise.all([
+        api<{ parcels: ParcelData[] }>("/api/parcels/warehouse/all?status=weighed", { token: token! }),
+        api<{ parcels: ParcelData[] }>("/api/parcels/warehouse/all?status=paid", { token: token! }),
+      ]);
+      return [...weighedRes.parcels, ...paidRes.parcels];
+    },
+    enabled: !!token,
+    refetchInterval: 15000, // auto-refresh every 15s
+  });
   const [completed, setCompleted] = useState(false);
 
   // Calculate cost when weight changes
@@ -109,6 +126,7 @@ export default function ReceivePage() {
       setParcel({ ...parcel!, ...data, status: "weighed" });
       setCalculatedCost(data.finalCost ? Number(data.finalCost) : calculatedCost);
       setStep(3);
+      queryClient.invalidateQueries({ queryKey: ["pending-parcels"] });
     },
   });
 
@@ -122,6 +140,7 @@ export default function ReceivePage() {
     onSuccess: (data) => {
       setParcel({ ...parcel!, ...data, status: "paid" });
       setStep(4);
+      queryClient.invalidateQueries({ queryKey: ["pending-parcels"] });
     },
   });
 
@@ -134,6 +153,7 @@ export default function ReceivePage() {
       }),
     onSuccess: () => {
       setCompleted(true);
+      queryClient.invalidateQueries({ queryKey: ["pending-parcels"] });
     },
   });
 
@@ -187,6 +207,61 @@ export default function ReceivePage() {
         </h2>
         <p className="text-slate-500">Поиск → Взвешивание → Оплата → Приём на склад</p>
       </div>
+
+      {/* Pending parcels panel */}
+      {pendingData && pendingData.length > 0 && step === 1 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 bg-amber-100/50 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-amber-600" />
+            <span className="text-xs font-black text-amber-700 uppercase tracking-wider">
+              В ожидании ({pendingData.length})
+            </span>
+          </div>
+          <div className="divide-y divide-amber-100 max-h-[240px] overflow-y-auto">
+            {pendingData.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => {
+                  setParcel(p);
+                  setTrackingCode(p.trackingCode);
+                  setSearchError("");
+                  if (p.status === "weighed") {
+                    setWeight(p.weightKg?.toString() || "");
+                    setCalculatedCost(p.finalCost ? Number(p.finalCost) : null);
+                    setStep(3);
+                  } else if (p.status === "paid") {
+                    setWeight(p.weightKg?.toString() || "");
+                    setCalculatedCost(p.finalCost ? Number(p.finalCost) : null);
+                    setStep(4);
+                  }
+                }}
+                className="w-full text-left px-5 py-3 hover:bg-amber-100/50 transition-colors flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Package className="w-4 h-4 text-amber-500 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="font-black text-sm text-slate-900 block">{p.trackingCode}</span>
+                    <span className="text-[10px] font-bold text-slate-500">{p.user.name} · {p.user.clientCode}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {p.finalCost && (
+                    <span className="text-xs font-black text-slate-700">${Number(p.finalCost).toFixed(2)}</span>
+                  )}
+                  <span className={cn(
+                    "px-2 py-0.5 rounded-full text-[10px] font-black uppercase",
+                    p.status === "weighed"
+                      ? "bg-yellow-200 text-yellow-800"
+                      : "bg-green-200 text-green-800"
+                  )}>
+                    {p.status === "weighed" ? "Ждёт оплаты" : "Ждёт приёма"}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Step indicator */}
       <div className="flex items-center gap-2">

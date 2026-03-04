@@ -113,9 +113,11 @@ export default function WarehousePage() {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="all">Все статусы</option>
-              <option value="received_at_origin">Принято</option>
+              <option value="created">Создан</option>
               <option value="weighed">Взвешено</option>
               <option value="paid">Оплачено</option>
+              <option value="received_at_origin">Принято на склад</option>
+              <option value="in_batch">В партии</option>
             </select>
           </div>
         </div>
