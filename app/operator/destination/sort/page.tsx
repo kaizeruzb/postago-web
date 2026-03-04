@@ -45,7 +45,7 @@ export default function SortingPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["sorting-inventory"],
-    queryFn: () => api<{ parcels: Parcel[] }>("/api/parcels/warehouse/all?status=received_at_destination", { token: token! }),
+    queryFn: () => api<{ parcels: Parcel[] }>("/api/parcels/warehouse/all?direction=inbound&status=received_at_destination", { token: token! }),
     enabled: !!token,
   });
 
