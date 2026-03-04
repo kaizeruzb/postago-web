@@ -34,6 +34,11 @@ export default function OperatorLayout({
               <h1 className="text-sm md:text-lg font-black text-slate-900 tracking-tight uppercase">Складская Панель</h1>
             </div>
             <div className="flex items-center gap-4">
+              {user?.warehouse && (
+                <span className="text-xs font-bold text-slate-500 hidden sm:inline">
+                  {user.warehouse.city}
+                </span>
+              )}
               <div className="text-right">
                 <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest leading-none">Роль</p>
                 <p className="text-[10px] md:text-xs font-bold text-slate-500">{user?.role === 'admin' ? 'АДМИНИСТРАТОР' : 'ОПЕРАТОР'}</p>

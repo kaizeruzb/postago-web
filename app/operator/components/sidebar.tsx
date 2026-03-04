@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
+import { COUNTRY_NAMES } from "@postago/shared";
 
 const navigation = [
   {
@@ -34,6 +35,17 @@ const navigation = [
 export function OperatorSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+
+  const warehouseType = user?.warehouse?.type;
+
+  const filteredNavigation = navigation.filter((section) => {
+    if (user?.role === "admin") return true;
+    if (!warehouseType) return true;
+    if (warehouseType === "origin") return section.section === "Склад отправления";
+    if (warehouseType === "destination") return section.section === "Склад назначения";
+    return true;
+  });
 
   return (
     <div className="flex h-full flex-col bg-slate-900 text-white w-64">
@@ -46,8 +58,24 @@ export function OperatorSidebarContent({ onNavigate }: { onNavigate?: () => void
         </Link>
       </div>
 
+      {user?.warehouse && (
+        <div className="px-5 py-2 border-b border-slate-800">
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Склад</p>
+          <p className="text-xs font-bold text-white">
+            {COUNTRY_NAMES[user.warehouse.country] || user.warehouse.country}, {user.warehouse.city}
+          </p>
+        </div>
+      )}
+
+      {user?.role === "operator" && !user?.warehouseId && (
+        <div className="px-5 py-3 bg-orange-900/30 border-b border-orange-800/50">
+          <p className="text-[10px] font-black text-orange-400 uppercase">Склад не назначен</p>
+          <p className="text-[10px] text-orange-300/70">Обратитесь к администратору</p>
+        </div>
+      )}
+
       <nav className="flex-1 px-4 space-y-6 mt-4 overflow-y-auto">
-        {navigation.map((group) => (
+        {filteredNavigation.map((group) => (
           <div key={group.section} className="space-y-1">
             <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">
               {group.section}
