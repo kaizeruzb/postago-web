@@ -21,11 +21,13 @@ import {
   Combine,
   Calculator,
   ChevronDown,
+  User,
+  Phone,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
-import { WAREHOUSES, COUNTRY_NAMES, TRANSPORT_TYPES } from "@/lib/constants";
+import { COUNTRY_NAMES, TRANSPORT_TYPES } from "@/lib/constants";
 
 interface Route {
   id: string;
@@ -37,12 +39,22 @@ interface Route {
   maxDays: number;
 }
 
+interface WarehouseItem {
+  id: string;
+  country: string;
+  city: string;
+  address: string;
+}
+
 interface CreatedParcel {
   id: string;
   trackingCode: string;
   route: Route;
   weightKg?: number;
   estimatedCost: number | null;
+  originCity?: string;
+  destinationCity?: string;
+  recipientName?: string;
 }
 
 const TRANSPORT_ICONS: Record<string, typeof Plane> = {
@@ -52,6 +64,14 @@ const TRANSPORT_ICONS: Record<string, typeof Plane> = {
   combined: Combine,
 };
 
+const FLAGS: Record<string, string> = {
+  KR: "\u{1F1F0}\u{1F1F7}",
+  CN: "\u{1F1E8}\u{1F1F3}",
+  TR: "\u{1F1F9}\u{1F1F7}",
+  UZ: "\u{1F1FA}\u{1F1FF}",
+  KZ: "\u{1F1F0}\u{1F1FF}",
+};
+
 export default function NewParcelPage() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
@@ -59,19 +79,48 @@ export default function NewParcelPage() {
   // Wizard state
   const [step, setStep] = useState(1);
 
-  // Form state
+  // Step 1: Route
   const [originCountry, setOriginCountry] = useState("");
+  const [originCity, setOriginCity] = useState("");
   const [destinationCountry, setDestinationCountry] = useState("");
+  const [destinationCity, setDestinationCity] = useState("");
   const [routeId, setRouteId] = useState("");
-  const [description, setDescription] = useState("");
+
+  // Step 2: Transport + Weight
   const [weightKg, setWeightKg] = useState("");
+
+  // Step 3: Details + Recipient
+  const [description, setDescription] = useState("");
   const [declaredValue, setDeclaredValue] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [recipientAddress, setRecipientAddress] = useState("");
+
   const [createdParcel, setCreatedParcel] = useState<CreatedParcel | null>(null);
 
+  // Fetch routes
   const { data: routesData, isLoading: isLoadingRoutes } = useQuery({
     queryKey: ["routes"],
     queryFn: () => api<{ routes: Route[] }>("/api/tariffs/routes"),
   });
+
+  // Fetch warehouses
+  const { data: warehousesData } = useQuery({
+    queryKey: ["warehouses-public"],
+    queryFn: () => api<{ warehouses: WarehouseItem[] }>("/api/tariffs/warehouses"),
+  });
+
+  const warehouses = warehousesData?.warehouses || [];
+
+  // Group warehouses by country
+  const warehousesByCountry = useMemo(() => {
+    const map: Record<string, WarehouseItem[]> = {};
+    for (const w of warehouses) {
+      if (!map[w.country]) map[w.country] = [];
+      map[w.country].push(w);
+    }
+    return map;
+  }, [warehouses]);
 
   // Filter routes by selected origin + destination
   const availableRoutes = useMemo(
@@ -88,7 +137,10 @@ export default function NewParcelPage() {
       ? (selectedRoute.ratePerKg * parseFloat(weightKg)).toFixed(2)
       : null;
 
-  const selectedWarehouse = WAREHOUSES.find((w) => w.originCode === originCountry);
+  // Selected origin warehouse (for address display)
+  const selectedOriginWarehouse = warehouses.find(
+    (w) => w.country === originCountry && w.city === originCity
+  );
 
   // Available origin countries (only those that have routes)
   const originCountries = useMemo(() => {
@@ -97,7 +149,7 @@ export default function NewParcelPage() {
     return codes.map((code) => ({
       code,
       name: COUNTRY_NAMES[code] || code,
-      flag: WAREHOUSES.find((w) => w.originCode === code)?.flag || "",
+      flag: FLAGS[code] || "",
     }));
   }, [routesData]);
 
@@ -117,6 +169,11 @@ export default function NewParcelPage() {
     }));
   }, [routesData, originCountry]);
 
+  // Cities for origin country
+  const originCities = warehousesByCountry[originCountry] || [];
+  // Cities for destination country
+  const destinationCities = warehousesByCountry[destinationCountry] || [];
+
   const createParcelMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       api<Record<string, unknown>>("/api/parcels", {
@@ -133,6 +190,9 @@ export default function NewParcelPage() {
         route,
         weightKg: weight,
         estimatedCost: weight ? route.ratePerKg * weight : null,
+        originCity,
+        destinationCity,
+        recipientName,
       });
       setStep(4);
     },
@@ -145,16 +205,27 @@ export default function NewParcelPage() {
     if (!routeId) return;
     createParcelMutation.mutate({
       routeId,
-      description,
+      description: description || undefined,
       weightKg: weightKg ? parseFloat(weightKg) : undefined,
       declaredValue: declaredValue ? parseFloat(declaredValue) : undefined,
+      recipientName: recipientName || undefined,
+      recipientPhone: recipientPhone || undefined,
+      recipientAddress: recipientAddress || undefined,
+      originCity: originCity || undefined,
+      destinationCity: destinationCity || undefined,
     });
   };
 
+  // Step 1 valid
+  const step1Valid = originCountry && originCity && destinationCountry && destinationCity;
+
   // --- Success Screen ---
   if (step === 4 && createdParcel) {
-    return <SuccessScreen parcel={createdParcel} />;
+    return <SuccessScreen parcel={createdParcel} warehouses={warehouses} />;
   }
+
+  const selectClass = "w-full appearance-none px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg font-medium bg-white";
+  const inputClass = "w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -186,11 +257,11 @@ export default function NewParcelPage() {
         ))}
       </div>
 
-      {/* Step 1: Origin + Destination Country */}
+      {/* Step 1: Origin + Destination (Country > City) */}
       {step === 1 && (
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-            {/* Origin */}
+            {/* Origin Country */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-slate-900 font-bold">
                 <MapPin className="w-5 h-5 text-blue-600" />
@@ -200,73 +271,114 @@ export default function NewParcelPage() {
               {isLoadingRoutes ? (
                 <div className="h-12 bg-slate-100 animate-pulse rounded-xl" />
               ) : (
-                <div className="relative">
-                  <select
-                    value={originCountry}
-                    onChange={(e) => {
-                      setOriginCountry(e.target.value);
-                      setDestinationCountry("");
-                      setRouteId("");
-                    }}
-                    className="w-full appearance-none px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg font-medium bg-white"
-                  >
-                    <option value="">Выберите страну отправки</option>
-                    {originCountries.map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {c.flag} {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <div className="space-y-3">
+                  <div className="relative">
+                    <select
+                      value={originCountry}
+                      onChange={(e) => {
+                        setOriginCountry(e.target.value);
+                        setOriginCity("");
+                        setDestinationCountry("");
+                        setDestinationCity("");
+                        setRouteId("");
+                      }}
+                      className={selectClass}
+                    >
+                      <option value="">Выберите страну</option>
+                      {originCountries.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.flag} {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                  </div>
+
+                  {originCountry && originCities.length > 0 && (
+                    <div className="relative">
+                      <select
+                        value={originCity}
+                        onChange={(e) => setOriginCity(e.target.value)}
+                        className={selectClass}
+                      >
+                        <option value="">Выберите город</option>
+                        {originCities.map((w) => (
+                          <option key={w.id} value={w.city}>{w.city}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Destination */}
-            {originCountry && (
+            {/* Destination Country + City */}
+            {originCountry && originCity && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-slate-900 font-bold">
                   <ArrowRight className="w-5 h-5 text-blue-600" />
                   <h3>Куда доставить?</h3>
                 </div>
 
-                <div className="relative">
-                  <select
-                    value={destinationCountry}
-                    onChange={(e) => {
-                      setDestinationCountry(e.target.value);
-                      setRouteId("");
-                    }}
-                    className="w-full appearance-none px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-lg font-medium bg-white"
-                  >
-                    <option value="">Выберите страну доставки</option>
-                    {destinationCountries.map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <div className="space-y-3">
+                  <div className="relative">
+                    <select
+                      value={destinationCountry}
+                      onChange={(e) => {
+                        setDestinationCountry(e.target.value);
+                        setDestinationCity("");
+                        setRouteId("");
+                      }}
+                      className={selectClass}
+                    >
+                      <option value="">Выберите страну</option>
+                      {destinationCountries.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                  </div>
+
+                  {destinationCountry && destinationCities.length > 0 && (
+                    <div className="relative">
+                      <select
+                        value={destinationCity}
+                        onChange={(e) => setDestinationCity(e.target.value)}
+                        className={selectClass}
+                      >
+                        <option value="">Выберите город</option>
+                        {destinationCities.map((w) => (
+                          <option key={w.id} value={w.city}>{w.city}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
 
           {/* Warehouse info */}
-          {selectedWarehouse && destinationCountry && (
+          {selectedOriginWarehouse && destinationCity && (
             <div className="bg-blue-50 rounded-2xl border border-blue-100 p-5 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">{selectedWarehouse.flag}</span>
+                <span className="text-2xl">{FLAGS[originCountry]}</span>
                 <div>
                   <p className="font-bold text-slate-900">
-                    Пункт приёма — {selectedWarehouse.city}
+                    Пункт приёма — {selectedOriginWarehouse.city}
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2 ml-9">
-                <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-slate-700">{selectedWarehouse.address}</p>
-              </div>
+              {selectedOriginWarehouse.address && (
+                <div className="flex items-start gap-2 ml-9">
+                  <MapPin className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-700">{selectedOriginWarehouse.address}</p>
+                </div>
+              )}
               <p className="text-xs text-slate-500 ml-9">
                 Принесите посылку по этому адресу после оформления заказа
               </p>
@@ -275,9 +387,9 @@ export default function NewParcelPage() {
 
           <button
             onClick={() => setStep(2)}
-            disabled={!originCountry || !destinationCountry}
+            disabled={!step1Valid}
             className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-lg transition-all ${
-              originCountry && destinationCountry
+              step1Valid
                 ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
@@ -402,10 +514,61 @@ export default function NewParcelPage() {
         </div>
       )}
 
-      {/* Step 3: Description + Declared Value */}
+      {/* Step 3: Recipient + Description + Declared Value */}
       {step === 3 && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          {/* Recipient */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 font-bold">
+              <User className="w-5 h-5 text-blue-600" />
+              <h3>Получатель</h3>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                Имя получателя
+              </label>
+              <input
+                type="text"
+                placeholder="ФИО получателя"
+                className={inputClass}
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                Телефон получателя
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="tel"
+                  placeholder="+998 90 123 45 67"
+                  className={`${inputClass} pl-10`}
+                  value={recipientPhone}
+                  onChange={(e) => setRecipientPhone(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                Адрес доставки
+              </label>
+              <input
+                type="text"
+                placeholder="Город, улица, дом, квартира"
+                className={inputClass}
+                value={recipientAddress}
+                onChange={(e) => setRecipientAddress(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Parcel details */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center gap-2 text-slate-900 font-bold">
               <Package className="w-5 h-5 text-blue-600" />
               <h3>Детали посылки</h3>
@@ -417,7 +580,7 @@ export default function NewParcelPage() {
               </label>
               <textarea
                 placeholder="Например: одежда, электроника, подарки..."
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all resize-none min-h-[100px]"
+                className={`${inputClass} resize-none min-h-[100px]`}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -430,7 +593,7 @@ export default function NewParcelPage() {
               <input
                 type="number"
                 placeholder="0.00"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                className={inputClass}
                 value={declaredValue}
                 onChange={(e) => setDeclaredValue(e.target.value)}
               />
@@ -442,11 +605,15 @@ export default function NewParcelPage() {
             <p className="text-sm font-bold text-slate-700">Ваш заказ</p>
             <div className="space-y-2 text-sm text-slate-600">
               <div className="flex justify-between">
-                <span>Маршрут</span>
+                <span>Откуда</span>
                 <span className="font-medium text-slate-900">
-                  {selectedWarehouse?.flag}{" "}
-                  {COUNTRY_NAMES[selectedRoute?.originCountry || ""]} →{" "}
-                  {COUNTRY_NAMES[selectedRoute?.destinationCountry || ""]}
+                  {FLAGS[originCountry]} {COUNTRY_NAMES[originCountry]}, {originCity}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Куда</span>
+                <span className="font-medium text-slate-900">
+                  {FLAGS[destinationCountry]} {COUNTRY_NAMES[destinationCountry]}, {destinationCity}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -455,6 +622,12 @@ export default function NewParcelPage() {
                   {TRANSPORT_TYPES[selectedRoute?.transportType || ""]}
                 </span>
               </div>
+              {recipientName && (
+                <div className="flex justify-between">
+                  <span>Получатель</span>
+                  <span className="font-medium text-slate-900">{recipientName}</span>
+                </div>
+              )}
               {weightKg && (
                 <div className="flex justify-between">
                   <span>Вес</span>
@@ -502,7 +675,7 @@ export default function NewParcelPage() {
 
 // --- Success Screen Component ---
 
-function SuccessScreen({ parcel }: { parcel: CreatedParcel }) {
+function SuccessScreen({ parcel, warehouses }: { parcel: CreatedParcel; warehouses: WarehouseItem[] }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -511,8 +684,8 @@ function SuccessScreen({ parcel }: { parcel: CreatedParcel }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const warehouse = WAREHOUSES.find(
-    (w) => w.originCode === parcel.route.originCountry
+  const warehouse = warehouses.find(
+    (w) => w.country === parcel.route.originCountry && w.city === parcel.originCity
   );
 
   return (
@@ -561,12 +734,14 @@ function SuccessScreen({ parcel }: { parcel: CreatedParcel }) {
           </div>
           <div className="bg-slate-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">{warehouse.flag}</span>
+              <span className="text-xl">{FLAGS[warehouse.country]}</span>
               <span className="font-bold text-slate-900">
-                {warehouse.country}, {warehouse.city}
+                {COUNTRY_NAMES[warehouse.country]}, {warehouse.city}
               </span>
             </div>
-            <p className="text-sm text-slate-600 ml-8">{warehouse.address}</p>
+            {warehouse.address && (
+              <p className="text-sm text-slate-600 ml-8">{warehouse.address}</p>
+            )}
           </div>
           <div className="flex items-start gap-2 text-slate-500">
             <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" />
