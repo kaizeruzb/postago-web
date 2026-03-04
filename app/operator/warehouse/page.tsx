@@ -36,16 +36,12 @@ interface Parcel {
   };
 }
 
-const originStatusOptions = [
+const allStatusOptions = [
   { value: "created", label: "Создан" },
   { value: "weighed", label: "Взвешено" },
   { value: "paid", label: "Оплачено" },
   { value: "received_at_origin", label: "Принято на склад" },
   { value: "in_batch", label: "В партии" },
-  { value: "shipped", label: "Отправлен" },
-];
-
-const destinationStatusOptions = [
   { value: "shipped", label: "Отправлен" },
   { value: "in_transit", label: "В пути" },
   { value: "customs", label: "На таможне" },
@@ -57,15 +53,9 @@ const destinationStatusOptions = [
 
 export default function WarehousePage() {
   const token = useAuthStore((state) => state.token);
-  const user = useAuthStore((state) => state.user);
-  const warehouseType = user?.warehouse?.type;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedParcels, setSelectedParcels] = useState<string[]>([]);
-
-  const statusOptions = warehouseType === "destination"
-    ? destinationStatusOptions
-    : originStatusOptions;
 
   const { data, isLoading } = useQuery({
     queryKey: ["warehouse-inventory", statusFilter],
@@ -138,7 +128,7 @@ export default function WarehousePage() {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="all">Все статусы</option>
-              {statusOptions.map((opt) => (
+              {allStatusOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>

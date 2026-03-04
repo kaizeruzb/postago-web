@@ -37,15 +37,8 @@ export function OperatorSidebarContent({ onNavigate }: { onNavigate?: () => void
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
 
-  const warehouseType = user?.warehouse?.type;
-
-  const filteredNavigation = navigation.filter((section) => {
-    if (user?.role === "admin") return true;
-    if (!warehouseType) return true;
-    if (warehouseType === "origin") return section.section === "Склад отправления";
-    if (warehouseType === "destination") return section.section === "Склад назначения";
-    return true;
-  });
+  // All operators see all sections — one operator handles both receiving and shipping
+  const filteredNavigation = navigation;
 
   return (
     <div className="flex h-full flex-col bg-slate-900 text-white w-64">
