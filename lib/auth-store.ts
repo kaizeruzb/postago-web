@@ -9,6 +9,13 @@ interface User {
   role: string;
   clientCode?: string;
   city?: string;
+  warehouseId?: string;
+  warehouse?: {
+    id: string;
+    country: string;
+    city: string;
+    type: "origin" | "destination";
+  };
 }
 
 interface AuthState {
