@@ -16,6 +16,13 @@ import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 
+interface Warehouse {
+  id: string;
+  country: string;
+  city: string;
+  type: "origin" | "destination";
+}
+
 interface UserData {
   id: string;
   phone: string;
@@ -24,6 +31,8 @@ interface UserData {
   city?: string;
   clientCode?: string;
   createdAt: string;
+  warehouseId?: string;
+  warehouse?: Warehouse;
   _count: { parcels: number };
 }
 
@@ -48,6 +57,26 @@ export default function AdminUsers() {
       return api<{ users: UserData[] }>(`/api/admin/users?${params.toString()}`, { token: token! });
     },
     enabled: !!token,
+  });
+
+  const { data: warehousesData } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: () => api<{ warehouses: Warehouse[] }>("/api/warehouses", { token: token! }),
+    enabled: !!token,
+  });
+
+  const warehouses = warehousesData?.warehouses || [];
+
+  const assignWarehouseMutation = useMutation({
+    mutationFn: (data: { id: string; warehouseId: string | null }) =>
+      api(`/api/admin/users/${data.id}/warehouse`, {
+        method: "PATCH",
+        body: JSON.stringify({ warehouseId: data.warehouseId }),
+        token: token!,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    },
   });
 
   const updateRoleMutation = useMutation({
@@ -111,6 +140,7 @@ export default function AdminUsers() {
                 <th className="pb-4 pt-2 px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Имя / Код</th>
                 <th className="pb-4 pt-2 px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Контакты</th>
                 <th className="pb-4 pt-2 px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Роль</th>
+                <th className="pb-4 pt-2 px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Склад</th>
                 <th className="pb-4 pt-2 px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Активность</th>
                 <th className="pb-4 pt-2 px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Действие</th>
               </tr>
@@ -118,14 +148,14 @@ export default function AdminUsers() {
             <tbody className="divide-y divide-slate-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center">
+                  <td colSpan={6} className="py-20 text-center">
                     <Loader2 className="w-8 h-8 text-purple-600 animate-spin mx-auto mb-2" />
                     <p className="text-sm font-bold text-slate-400">Загрузка пользователей...</p>
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center text-slate-400">
+                  <td colSpan={6} className="py-20 text-center text-slate-400">
                     <User className="w-12 h-12 opacity-10 mx-auto mb-4" />
                     <p className="text-sm font-bold">Пользователи не найдены</p>
                   </td>
@@ -154,6 +184,28 @@ export default function AdminUsers() {
                       )}>
                         {roles.find(r => r.value === u.role)?.label || u.role}
                       </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      {u.role === "operator" ? (
+                        <select
+                          className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600 outline-none cursor-pointer focus:ring-2 focus:ring-purple-600"
+                          value={u.warehouseId || ""}
+                          onChange={(e) => assignWarehouseMutation.mutate({
+                            id: u.id,
+                            warehouseId: e.target.value || null,
+                          })}
+                          disabled={assignWarehouseMutation.isPending}
+                        >
+                          <option value="">Не назначен</option>
+                          {warehouses.map((w) => (
+                            <option key={w.id} value={w.id}>
+                              {w.city} ({w.type === "origin" ? "отпр." : "назн."})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-[10px] text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
@@ -211,6 +263,27 @@ export default function AdminUsers() {
                   <span className="text-xs font-bold text-slate-700">{u.phone}</span>
                   <span className="text-[10px] font-medium text-slate-400">{u.city || "Город не указан"}</span>
                 </div>
+                {u.role === "operator" && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase">Склад:</span>
+                    <select
+                      className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600 outline-none cursor-pointer focus:ring-2 focus:ring-purple-600"
+                      value={u.warehouseId || ""}
+                      onChange={(e) => assignWarehouseMutation.mutate({
+                        id: u.id,
+                        warehouseId: e.target.value || null,
+                      })}
+                      disabled={assignWarehouseMutation.isPending}
+                    >
+                      <option value="">Не назначен</option>
+                      {warehouses.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.city} ({w.type === "origin" ? "отпр." : "назн."})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
                     <Package className="w-3.5 h-3.5 text-slate-400" />
