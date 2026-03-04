@@ -65,17 +65,40 @@ function RegisterForm() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Город</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Страна и город</label>
           <select
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
           >
-            <option value="Tashkent">Ташкент</option>
-            <option value="Samarkand">Самарканд</option>
-            <option value="Bukhara">Бухара</option>
-            <option value="Almaty">Алматы</option>
-            <option value="Astana">Астана</option>
+            <optgroup label="Узбекистан">
+              <option value="Tashkent">Ташкент</option>
+              <option value="Samarkand">Самарканд</option>
+              <option value="Bukhara">Бухара</option>
+              <option value="Namangan">Наманган</option>
+              <option value="Fergana">Фергана</option>
+              <option value="Andijan">Андижан</option>
+            </optgroup>
+            <optgroup label="Казахстан">
+              <option value="Almaty">Алматы</option>
+              <option value="Astana">Астана</option>
+              <option value="Shymkent">Шымкент</option>
+            </optgroup>
+            <optgroup label="Южная Корея">
+              <option value="Seoul">Сеул</option>
+              <option value="Busan">Пусан</option>
+              <option value="Incheon">Инчхон</option>
+            </optgroup>
+            <optgroup label="Китай">
+              <option value="Guangzhou">Гуанчжоу</option>
+              <option value="Beijing">Пекин</option>
+              <option value="Shanghai">Шанхай</option>
+            </optgroup>
+            <optgroup label="Турция">
+              <option value="Istanbul">Стамбул</option>
+              <option value="Ankara">Анкара</option>
+              <option value="Antalya">Анталья</option>
+            </optgroup>
           </select>
         </div>
         <div className="pt-2">
