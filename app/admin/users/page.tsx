@@ -186,7 +186,7 @@ export default function AdminUsers() {
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      {u.role === "operator" ? (
+                      {(u.role === "operator" || u.role === "courier") ? (
                         <select
                           className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600 outline-none cursor-pointer focus:ring-2 focus:ring-purple-600"
                           value={u.warehouseId || ""}
@@ -263,7 +263,7 @@ export default function AdminUsers() {
                   <span className="text-xs font-bold text-slate-700">{u.phone}</span>
                   <span className="text-[10px] font-medium text-slate-400">{u.city || "Город не указан"}</span>
                 </div>
-                {u.role === "operator" && (
+                {(u.role === "operator" || u.role === "courier") && (
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-slate-400 uppercase">Склад:</span>
                     <select
