@@ -8,7 +8,8 @@ import {
   Map,
   LogOut,
   ShieldCheck,
-  Package
+  Package,
+  Warehouse
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const navigation = [
   { name: "Пользователи", href: "/admin/users", icon: Users },
   { name: "Тарифы", href: "/admin/routes", icon: Map },
   { name: "Посылки", href: "/admin/parcels", icon: Package },
+  { name: "Склады", href: "/admin/warehouses", icon: Warehouse },
 ];
 
 export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
