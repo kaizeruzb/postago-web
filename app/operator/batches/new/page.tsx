@@ -13,10 +13,18 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { COUNTRY_NAMES, TRANSPORT_TYPES } from "@/lib/constants";
+
+interface Warehouse {
+  id: string;
+  country: string;
+  city: string;
+  address: string;
+  type: "origin" | "destination";
+}
 
 interface Parcel {
   id: string;
@@ -39,6 +47,7 @@ function NewBatchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = useAuthStore((state) => state.token);
+  const [destinationWarehouseId, setDestinationWarehouseId] = useState("");
   const parcelIdsString = searchParams.get("parcels");
   const parcelIds = useMemo(
     () => (parcelIdsString ? parcelIdsString.split(",") : []),
@@ -56,6 +65,16 @@ function NewBatchContent() {
     },
     enabled: !!token && parcelIds.length > 0,
   });
+
+  const { data: warehousesData } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: () => api<{ warehouses: Warehouse[] }>("/api/warehouses", { token: token! }),
+    enabled: !!token,
+  });
+
+  const destinationWarehouses = warehousesData?.warehouses.filter(
+    (w) => w.type === "destination"
+  ) || [];
 
   // Auto-detect route from parcels
   const detectedRoute = useMemo(() => {
@@ -80,7 +99,7 @@ function NewBatchContent() {
   );
 
   const createBatchMutation = useMutation({
-    mutationFn: (data: { routeId: string; parcelIds: string[] }) =>
+    mutationFn: (data: { routeId: string; parcelIds: string[]; destinationWarehouseId: string }) =>
       api("/api/batches", {
         method: "POST",
         body: JSON.stringify(data),
@@ -95,10 +114,11 @@ function NewBatchContent() {
   });
 
   const handleSubmit = () => {
-    if (!routeId || !parcels || parcels.length === 0 || mixedRoutes) return;
+    if (!routeId || !parcels || parcels.length === 0 || mixedRoutes || !destinationWarehouseId) return;
     createBatchMutation.mutate({
       routeId,
       parcelIds: parcels.map((p: Parcel) => p.id),
+      destinationWarehouseId,
     });
   };
 
@@ -191,6 +211,33 @@ function NewBatchContent() {
         </div>
       )}
 
+      {/* Destination warehouse selector */}
+      {!mixedRoutes && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
+          <div className="flex items-center gap-2 text-slate-900 font-bold">
+            <MapPin className="w-5 h-5 text-orange-600" />
+            <h3>Склад назначения</h3>
+          </div>
+          <select
+            className="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:border-orange-600 focus:ring-0 outline-none transition-all"
+            value={destinationWarehouseId}
+            onChange={(e) => setDestinationWarehouseId(e.target.value)}
+          >
+            <option value="">Выберите склад назначения</option>
+            {destinationWarehouses.map((w) => (
+              <option key={w.id} value={w.id}>
+                {COUNTRY_NAMES[w.country] || w.country}, {w.city}
+              </option>
+            ))}
+          </select>
+          {!destinationWarehouseId && (
+            <p className="text-xs font-bold text-amber-600">
+              Выберите склад назначения для формирования партии
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Parcels list */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex justify-between items-center">
@@ -255,10 +302,11 @@ function NewBatchContent() {
           disabled={
             createBatchMutation.isPending ||
             !parcels?.length ||
-            mixedRoutes
+            mixedRoutes ||
+            !destinationWarehouseId
           }
           className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 ${
-            createBatchMutation.isPending || !parcels?.length || mixedRoutes
+            createBatchMutation.isPending || !parcels?.length || mixedRoutes || !destinationWarehouseId
               ? "bg-slate-800 text-slate-500 cursor-not-allowed"
               : "bg-orange-600 text-white hover:bg-orange-700 shadow-lg"
           }`}
