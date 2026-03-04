@@ -21,7 +21,6 @@ interface WarehouseItem {
   country: string;
   city: string;
   address: string;
-  type: "origin" | "destination";
 }
 
 const COUNTRIES = [
@@ -32,7 +31,7 @@ const COUNTRIES = [
   { code: "KZ", name: "Казахстан" },
 ];
 
-const emptyForm = { country: "KR", city: "", address: "", type: "origin" as const };
+const emptyForm = { country: "KR", city: "", address: "" };
 
 export default function WarehousesPage() {
   const token = useAuthStore((s) => s.token);
@@ -77,7 +76,7 @@ export default function WarehousesPage() {
 
   const startEdit = (w: WarehouseItem) => {
     setEditingId(w.id);
-    setForm({ country: w.country, city: w.city, address: w.address, type: w.type });
+    setForm({ country: w.country, city: w.city, address: w.address });
     setShowForm(false);
   };
 
@@ -154,17 +153,6 @@ export default function WarehousesPage() {
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-purple-600"
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Тип</label>
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value as "origin" | "destination" })}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-purple-600"
-              >
-                <option value="origin">Отправление</option>
-                <option value="destination">Назначение</option>
-              </select>
-            </div>
           </div>
           <div className="flex gap-3 pt-2">
             <button
@@ -207,7 +195,6 @@ export default function WarehousesPage() {
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Страна</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Город</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Адрес</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Тип</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Действия</th>
                 </tr>
               </thead>
@@ -224,16 +211,6 @@ export default function WarehousesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs font-medium text-slate-500">{w.address || "—"}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest",
-                        w.type === "origin"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-green-100 text-green-700"
-                      )}>
-                        {w.type === "origin" ? "Отправление" : "Назначение"}
-                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -261,19 +238,11 @@ export default function WarehousesPage() {
             <div className="md:hidden divide-y divide-slate-100">
               {warehouses.map((w) => (
                 <div key={w.id} className="p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-black text-slate-900">
-                        {COUNTRY_NAMES[w.country] || w.country}
-                      </span>
-                      <span className="text-sm font-bold text-slate-500 ml-2">{w.city}</span>
-                    </div>
-                    <span className={cn(
-                      "px-2 py-0.5 rounded-full text-[10px] font-black uppercase",
-                      w.type === "origin" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"
-                    )}>
-                      {w.type === "origin" ? "Отпр." : "Назн."}
+                  <div>
+                    <span className="text-sm font-black text-slate-900">
+                      {COUNTRY_NAMES[w.country] || w.country}
                     </span>
+                    <span className="text-sm font-bold text-slate-500 ml-2">{w.city}</span>
                   </div>
                   <p className="text-xs text-slate-400">{w.address || "Адрес не указан"}</p>
                   <div className="flex gap-2 pt-1">
