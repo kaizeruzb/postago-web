@@ -26,6 +26,7 @@ const navigation = [
   {
     section: "Склад назначения",
     items: [
+      { name: "Все посылки", href: "/operator/destination/inventory", icon: Package },
       { name: "Приём партий", href: "/operator/destination/receive", icon: ArrowDownToLine },
       { name: "Сортировка", href: "/operator/destination/sort", icon: Package },
     ],
