@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 
 export const statusMap: Record<string, { label: string; color: string }> = {
   created: { label: "Создан", color: "bg-slate-100 text-slate-700" },
+  weighed: { label: "Взвешено", color: "bg-yellow-100 text-yellow-700" },
   paid: { label: "Оплачен", color: "bg-green-100 text-green-700" },
   received_at_origin: { label: "Принят на складе", color: "bg-blue-100 text-blue-700" },
-  weighed: { label: "Взвешен", color: "bg-indigo-100 text-indigo-700" },
   in_batch: { label: "В партии", color: "bg-purple-100 text-purple-700" },
   shipped: { label: "Отправлен", color: "bg-blue-100 text-blue-700" },
   in_transit: { label: "В пути", color: "bg-sky-100 text-sky-700" },
