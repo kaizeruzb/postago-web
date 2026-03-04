@@ -34,7 +34,7 @@ export default function CourierDashboard() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["courier-deliveries"],
-    queryFn: () => api<{ parcels: Parcel[] }>("/api/parcels/warehouse/all?status=out_for_delivery", { token: token! }),
+    queryFn: () => api<{ parcels: Parcel[] }>("/api/parcels/warehouse/all?direction=inbound&status=out_for_delivery", { token: token! }),
     enabled: !!token,
   });
 

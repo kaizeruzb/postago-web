@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthGuard } from "@/lib/auth-guard";
+import { useAuthStore } from "@/lib/auth-store";
 import { CourierSidebar, CourierSidebarContent } from "./components/sidebar";
 import { MobileDrawer } from "../components/mobile-drawer";
 import { Menu } from "lucide-react";
+import { api } from "@/lib/api";
 
 export default function CourierLayout({
   children,
@@ -12,6 +14,17 @@ export default function CourierLayout({
   children: React.ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const token = useAuthStore((s) => s.token);
+  const user = useAuthStore((s) => s.user);
+  const setAuth = useAuthStore((s) => s.setAuth);
+
+  // Refresh user data (incl. warehouse) on mount
+  useEffect(() => {
+    if (!token) return;
+    api<{ id: string; phone: string; name: string; role: string; clientCode?: string; city?: string; warehouseId?: string; warehouse?: { id: string; country: string; city: string; type: "origin" | "destination" } }>("/api/auth/me", { token })
+      .then((freshUser) => setAuth(token, freshUser))
+      .catch(() => {});
+  }, [token]);
 
   return (
     <AuthGuard allowedRoles={["courier", "admin"]}>

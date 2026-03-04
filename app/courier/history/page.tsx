@@ -31,7 +31,7 @@ export default function CourierHistory() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["courier-history"],
-    queryFn: () => api<{ parcels: Parcel[] }>("/api/parcels/warehouse/all?status=delivered", { token: token! }),
+    queryFn: () => api<{ parcels: Parcel[] }>("/api/parcels/warehouse/all?direction=inbound&status=delivered", { token: token! }),
     enabled: !!token,
   });
 

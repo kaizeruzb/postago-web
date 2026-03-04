@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
+import { COUNTRY_NAMES } from "@postago/shared";
 
 const navigation = [
   { name: "Активные доставки", href: "/courier", icon: Package },
@@ -33,7 +34,7 @@ export function CourierSidebarContent({ onNavigate }: { onNavigate?: () => void 
         </Link>
       </div>
 
-      <div className="px-4 py-4 mb-2">
+      <div className="px-4 py-4 mb-2 space-y-2">
         <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
           <div className="h-10 w-10 rounded-full bg-green-600/20 flex items-center justify-center text-green-500">
             <User className="w-6 h-6" />
@@ -43,6 +44,18 @@ export function CourierSidebarContent({ onNavigate }: { onNavigate?: () => void 
             <p className="text-sm font-bold truncate">{user?.name}</p>
           </div>
         </div>
+        {user?.warehouse ? (
+          <div className="px-3 py-2 bg-slate-800/30 rounded-lg">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Склад</p>
+            <p className="text-xs font-bold text-white">
+              {COUNTRY_NAMES[user.warehouse.country] || user.warehouse.country}, {user.warehouse.city}
+            </p>
+          </div>
+        ) : (
+          <div className="px-3 py-2 bg-orange-900/30 rounded-lg">
+            <p className="text-[10px] font-black text-orange-400 uppercase">Склад не назначен</p>
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 px-4 space-y-1">
