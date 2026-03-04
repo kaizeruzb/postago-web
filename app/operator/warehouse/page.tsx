@@ -42,6 +42,7 @@ const originStatusOptions = [
   { value: "paid", label: "Оплачено" },
   { value: "received_at_origin", label: "Принято на склад" },
   { value: "in_batch", label: "В партии" },
+  { value: "shipped", label: "Отправлен" },
 ];
 
 const destinationStatusOptions = [
