@@ -6,9 +6,20 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { ParcelCard } from "./components/parcel-card";
-import { WAREHOUSES } from "@/lib/constants";
+import { useWarehouses } from "@/lib/use-warehouses";
+import { COUNTRY_NAMES } from "@/lib/constants";
+
+const FLAGS: Record<string, string> = {
+  KR: "\u{1F1F0}\u{1F1F7}",
+  CN: "\u{1F1E8}\u{1F1F3}",
+  TR: "\u{1F1F9}\u{1F1F7}",
+  UZ: "\u{1F1FA}\u{1F1FF}",
+  KZ: "\u{1F1F0}\u{1F1FF}",
+};
 
 function WelcomeScreen() {
+  const { warehouses } = useWarehouses();
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -55,29 +66,33 @@ function WelcomeScreen() {
       </div>
 
       {/* Warehouses */}
-      <div>
-        <h3 className="text-lg font-bold text-slate-900 mb-4">Наши склады</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {WAREHOUSES.map((wh) => (
-            <div
-              key={wh.city}
-              className="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-300 transition-colors"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{wh.flag}</span>
-                <div>
-                  <p className="font-bold text-slate-900">{wh.country}</p>
-                  <p className="text-xs text-slate-500">{wh.city}</p>
+      {warehouses.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 mb-4">Наши склады</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {warehouses.map((wh) => (
+              <div
+                key={wh.id}
+                className="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-300 transition-colors"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">{FLAGS[wh.country] || ""}</span>
+                  <div>
+                    <p className="font-bold text-slate-900">{COUNTRY_NAMES[wh.country] || wh.country}</p>
+                    <p className="text-xs text-slate-500">{wh.city}</p>
+                  </div>
                 </div>
+                {wh.address && (
+                  <div className="flex items-start gap-1.5 mt-3 text-sm text-slate-600">
+                    <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+                    <span>{wh.address}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-start gap-1.5 mt-3 text-sm text-slate-600">
-                <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
-                <span>{wh.address}</span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* CTA */}
       <div className="text-center pb-4">

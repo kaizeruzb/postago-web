@@ -72,10 +72,6 @@ function NewBatchContent() {
     enabled: !!token,
   });
 
-  const destinationWarehouses = warehousesData?.warehouses.filter(
-    (w) => w.type === "destination"
-  ) || [];
-
   // Auto-detect route from parcels
   const detectedRoute = useMemo(() => {
     if (!parcels || parcels.length === 0) return null;
@@ -83,6 +79,10 @@ function NewBatchContent() {
   }, [parcels]);
 
   const routeId = detectedRoute?.id || "";
+
+  const destinationWarehouses = warehousesData?.warehouses.filter(
+    (w) => detectedRoute ? w.country === detectedRoute.destinationCountry : true
+  ) || [];
 
   // Check if all parcels are on the same route
   const mixedRoutes = useMemo(() => {

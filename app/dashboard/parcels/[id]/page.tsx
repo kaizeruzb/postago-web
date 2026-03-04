@@ -23,7 +23,16 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { StatusBadge } from "../../components/status-badge";
-import { WAREHOUSES, COUNTRY_NAMES, TRANSPORT_TYPES } from "@/lib/constants";
+import { COUNTRY_NAMES, TRANSPORT_TYPES } from "@/lib/constants";
+import { useWarehouses } from "@/lib/use-warehouses";
+
+const FLAGS: Record<string, string> = {
+  KR: "\u{1F1F0}\u{1F1F7}",
+  CN: "\u{1F1E8}\u{1F1F3}",
+  TR: "\u{1F1F9}\u{1F1F7}",
+  UZ: "\u{1F1FA}\u{1F1FF}",
+  KZ: "\u{1F1F0}\u{1F1FF}",
+};
 
 interface ParcelEvent {
   id: string;
@@ -48,6 +57,11 @@ interface Parcel {
     transportType: string;
     ratePerKg?: number;
   };
+  originCity?: string;
+  destinationCity?: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  recipientAddress?: string;
   events: ParcelEvent[];
   photos: { id: string; url: string }[];
   payments: { id: string; status: string }[];
@@ -75,6 +89,7 @@ export default function ParcelDetailsPage() {
   const { id } = useParams();
   const token = useAuthStore((state) => state.token);
   const [copied, setCopied] = useState(false);
+  const { warehouses } = useWarehouses();
 
   const { data: parcel, isLoading, error } = useQuery({
     queryKey: ["parcel", id],
@@ -130,8 +145,8 @@ export default function ParcelDetailsPage() {
     );
   }
 
-  const warehouse = WAREHOUSES.find(
-    (w) => w.originCode === parcel.route.originCountry
+  const warehouse = warehouses.find(
+    (w) => w.country === parcel.route.originCountry && (!parcel.originCity || w.city === parcel.originCity)
   );
   const canPay =
     (parcel.status === "weighed" || parcel.status === "received_at_origin") &&
@@ -196,12 +211,12 @@ export default function ParcelDetailsPage() {
           </div>
           <div className="bg-slate-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">{warehouse.flag}</span>
+              <span className="text-xl">{FLAGS[warehouse.country] || ""}</span>
               <span className="font-bold text-slate-900">
-                {warehouse.country}, {warehouse.city}
+                {COUNTRY_NAMES[warehouse.country] || warehouse.country}, {warehouse.city}
               </span>
             </div>
-            <p className="text-sm text-slate-600 ml-8">{warehouse.address}</p>
+            {warehouse.address && <p className="text-sm text-slate-600 ml-8">{warehouse.address}</p>}
           </div>
           <div className="flex items-start gap-2 text-slate-500">
             <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" />
